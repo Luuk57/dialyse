@@ -28,13 +28,11 @@
         .icon-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--border-glass); color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .icon-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
 
-        .auto-pdf-banner { background: rgba(0, 242, 254, 0.1); border: 2px solid var(--neon-cyan); border-radius: 12px; padding: 14px; width: 100%; max-width: 500px; margin-bottom: 15px; display: none; text-align: center; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0,242,254, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(0,242,254, 0); } 100% { box-shadow: 0 0 0 0 rgba(0,242,254, 0); } }
+        .auto-pdf-banner { background: rgba(0, 242, 254, 0.1); border: 2px solid var(--neon-cyan); border-radius: 12px; padding: 14px; width: 100%; max-width: 500px; margin-bottom: 15px; display: none; text-align: center; }
         .auto-pdf-title { font-size: 12px; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase; margin-bottom: 6px; }
         .btn-auto-pdf { background: var(--neon-cyan); color: #030508; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; width: 100%; margin-top: 6px; }
 
-        .scheduled-banner { background: rgba(245, 158, 11, 0.12); border: 2px solid var(--neon-orange); border-radius: 12px; padding: 14px; width: 100%; max-width: 500px; margin-bottom: 15px; display: none; cursor: pointer; transition: all 0.2s ease; }
-        .scheduled-banner:hover, .scheduled-banner:active { background: rgba(245, 158, 11, 0.25); transform: scale(0.99); }
+        .scheduled-banner { background: rgba(245, 158, 11, 0.12); border: 2px solid var(--neon-orange); border-radius: 12px; padding: 14px; width: 100%; max-width: 500px; margin-bottom: 15px; display: none; cursor: pointer; }
         .scheduled-title { font-size: 11px; font-weight: 800; color: var(--neon-orange); text-transform: uppercase; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
         .scheduled-details { font-size: 13px; color: var(--text-main); font-weight: 600; }
         .click-hint { font-size: 10px; color: var(--neon-cyan); font-weight: 700; margin-top: 6px; text-transform: uppercase; }
@@ -46,7 +44,6 @@
         .form-group { display: flex; flex-direction: column; margin-bottom: 12px; }
         label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
         input, select, textarea { background: #0f172a; border: 1px solid var(--border-glass); border-radius: 8px; padding: 10px; color: white; font-size: 14px; font-weight: 600; outline: none; width: 100%; }
-        input:focus, select:focus, textarea:focus { border-color: var(--neon-cyan); }
         
         select[multiple] { height: 90px; padding: 6px; }
         select[multiple] option { padding: 4px; border-radius: 4px; margin-bottom: 2px; }
@@ -55,21 +52,20 @@
         .uf-box { background: rgba(0,242,254,0.04); border: 1px solid var(--border-glass); border-radius: 12px; padding: 14px; margin-top: 10px; margin-bottom: 12px; text-align: center; }
         .uf-value { font-size: 26px; font-weight: 900; margin-top: 4px; }
         
-        .badge-green { color: var(--neon-green); text-shadow: 0 0 8px rgba(16,185,129,0.3); }
-        .badge-orange { color: var(--neon-orange); text-shadow: 0 0 8px rgba(245,158,11,0.3); }
-        .badge-red { color: var(--neon-red); text-shadow: 0 0 8px rgba(239,68,68,0.3); }
+        .badge-green { color: var(--neon-green); }
+        .badge-orange { color: var(--neon-orange); }
+        .badge-red { color: var(--neon-red); }
 
         .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #0f172a; border: 1px solid var(--border-glass); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
-        .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-main); cursor: pointer; text-transform: none; }
-        .checkbox-label input { width: 18px; height: 18px; accent-color: var(--neon-cyan); cursor: pointer; }
+        .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-main); cursor: pointer; }
+        .checkbox-label input { width: 18px; height: 18px; accent-color: var(--neon-cyan); }
 
         .measurement-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; background: #0f172a; border: 1px solid var(--border-glass); padding: 8px; border-radius: 8px; }
         .measurement-row input { padding: 6px; font-size: 13px; text-align: center; }
         .btn-small-del { background: var(--neon-red); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .btn-small-add { background: var(--neon-cyan); color: #030508; border: none; padding: 8px; border-radius: 8px; font-weight: 800; font-size: 12px; width: 100%; cursor: pointer; margin-bottom: 12px; }
 
-        .btn-submit { width: 100%; padding: 14px; background: var(--neon-cyan); color: #030508; border: none; border-radius: 10px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; box-shadow: 0 0 15px rgba(0,242,254,0.25); }
-        .btn-submit:active { transform: scale(0.98); }
+        .btn-submit { width: 100%; padding: 14px; background: var(--neon-cyan); color: #030508; border: none; border-radius: 10px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 100; }
         .modal-content { background: #0f172a; border: 1px solid var(--border-glass); padding: 22px; border-radius: 16px; width: 90%; max-width: 440px; text-align: center; max-height: 85vh; overflow-y: auto; }
@@ -314,7 +310,7 @@
         let sessions = [];
         let planned = [];
         let activePlannedIndex = null;
-        let editingSessionIndex = null; // Houdt bij welke opgeslagen sessie momenteel bewerkt wordt
+        let editingSessionIndex = null;
         let nurses = JSON.parse(localStorage.getItem('dialyse_nurses')) || ['Zuster A', 'Broeder B'];
         let dryWeight = parseFloat(localStorage.getItem('dialyse_dry_weight')) || 109.0;
         let pdfTargetTime = localStorage.getItem('dialysis_pdf_time') || '17:00';
@@ -322,11 +318,11 @@
         let apiKey = localStorage.getItem('dialysis_jsonbin_apikey') || '';
         let binId = localStorage.getItem('dialysis_jsonbin_binid') || '';
 
-        window.onload = async () => {
+        window.onload = async function() {
             const now = new Date();
-            const pad = (n) => String(n).padStart(2, '0');
-            const todayStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
-            const localIso = `${todayStr}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            const pad = function(n) { return String(n).padStart(2, '0'); };
+            const todayStr = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate());
+            const localIso = todayStr + 'T' + pad(now.getHours()) + ':' + pad(now.getMinutes());
             
             document.getElementById('appointmentDateTime').value = localIso;
             document.getElementById('connectDateTime').value = localIso;
@@ -353,13 +349,13 @@
 
         function checkTodayPlanning() {
             const todayStr = new Date().toISOString().split('T')[0];
-            const todayAppts = planned.filter(p => p.date === todayStr);
+            const todayAppts = planned.filter(function(p) { return p.date === todayStr; });
             const banner = document.getElementById('scheduledBanner');
 
             if (todayAppts.length > 0) {
                 let html = '';
-                todayAppts.forEach(a => {
-                    html += `<div>⏰ <span class="badge-green">${a.time || '20:00'}</span> - 🩸 <b>${a.type}</b> ${a.note ? '('+a.note+')' : ''}</div>`;
+                todayAppts.forEach(function(a) {
+                    html += '<div>⏰ <span class="badge-green">' + (a.time || '20:00') + '</span> - 🩸 <b>' + a.type + '</b> ' + (a.note ? '('+a.note+')' : '') + '</div>';
                 });
                 document.getElementById('scheduledDetailsText').innerHTML = html;
                 banner.style.display = 'block';
@@ -370,14 +366,14 @@
 
         function loadScheduledIntoForm() {
             const todayStr = new Date().toISOString().split('T')[0];
-            const apptIndex = planned.findIndex(p => p.date === todayStr);
+            const apptIndex = planned.findIndex(function(p) { return p.date === todayStr; });
 
             if (apptIndex !== -1) {
                 const appt = planned[apptIndex];
                 activePlannedIndex = apptIndex;
 
                 const apptTime = appt.time || '20:00';
-                const apptIso = `${todayStr}T${apptTime}`;
+                const apptIso = todayStr + 'T' + apptTime;
 
                 document.getElementById('appointmentDateTime').value = apptIso;
                 document.getElementById('connectDateTime').value = apptIso;
@@ -394,14 +390,13 @@
 
                 calculateUF();
                 document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
-                alert('Geplande afspraak gegevens ingeladen! Vul je gewichten en metingen in en klik op Opslaan.');
+                alert('Geplande afspraak gegevens ingeladen!');
             }
         }
 
-        // Functie om een bestaande sessie in te laden om te bewerken
         function editSession(idx) {
             const s = sessions[idx];
-            editingSessionIndex = idx; // Sla de index op
+            editingSessionIndex = idx;
 
             document.getElementById('appointmentDateTime').value = s.appointmentDateTime || '';
             document.getElementById('connectDateTime').value = s.connectDateTime || '';
@@ -419,36 +414,26 @@
             document.getElementById('shuntFlow').value = s.shuntFlow || '';
             document.getElementById('notes').value = s.notes || '';
 
-            // Metingen herstellen
             const container = document.getElementById('measurementsContainer');
             container.innerHTML = '';
             if (s.measurements && s.measurements.length > 0) {
-                s.measurements.forEach(m => {
+                s.measurements.forEach(function(m) {
                     const row = document.createElement('div');
                     row.className = 'measurement-row';
-                    row.innerHTML = `
-                        <input type="text" style="width:75px;" placeholder="Tijd" value="${m.time || ''}" class="m-time">
-                        <input type="number" placeholder="Sys" value="${m.sys !== '-' ? m.sys : ''}" class="m-sys">
-                        <span style="color:var(--text-muted);">/</span>
-                        <input type="number" placeholder="Dia" value="${m.dia !== '-' ? m.dia : ''}" class="m-dia">
-                        <input type="number" placeholder="HR" value="${m.hr !== '-' ? m.hr : ''}" class="m-hr">
-                        <button type="button" class="btn-small-del" onclick="this.parentElement.remove()">✕</button>
-                    `;
+                    row.innerHTML = '<input type="text" style="width:75px;" placeholder="Tijd" value="' + (m.time || '') + '" class="m-time"><input type="number" placeholder="Sys" value="' + (m.sys !== '-' ? m.sys : '') + '" class="m-sys"><span style="color:var(--text-muted);">/</span><input type="number" placeholder="Dia" value="' + (m.dia !== '-' ? m.dia : '') + '" class="m-dia"><input type="number" placeholder="HR" value="' + (m.hr !== '-' ? m.hr : '') + '" class="m-hr"><button type="button" class="btn-small-del" onclick="this.parentElement.remove()">✕</button>';
                     container.appendChild(row);
                 });
             } else {
                 addMeasurementRow();
             }
 
-            // Verpleging selecteren
             const nurseSelect = document.getElementById('nurseSelect');
-            Array.from(nurseSelect.options).forEach(opt => {
+            Array.from(nurseSelect.options).forEach(function(opt) {
                 opt.selected = s.nurses && s.nurses.includes(opt.value);
             });
 
             calculateUF();
 
-            // UI aanpassen voor bewerk-modus
             document.getElementById('formCardTitle').innerText = 'Sessie Bewerken (Record #' + (idx + 1) + ')';
             document.getElementById('editingIndicator').style.display = 'block';
             document.getElementById('cancelEditBtn').style.display = 'inline';
@@ -465,7 +450,6 @@
             document.getElementById('cancelEditBtn').style.display = 'none';
             document.getElementById('saveButton').innerText = 'SESSIE OPSLAAN & SYNC';
             
-            // Formulier resetten
             document.getElementById('preWeight').value = '';
             document.getElementById('postWeight').value = '';
             document.getElementById('setUf').value = '';
@@ -482,7 +466,7 @@
             }
 
             const now = new Date();
-            const currentTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            const currentTime = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
 
             if (currentTime >= pdfTargetTime) {
                 document.getElementById('autoPdfBanner').style.display = 'block';
@@ -535,15 +519,8 @@
             if (planned.length === 0) {
                 container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 10px;">Geen geplande afspraken.</p>';
             } else {
-                planned.forEach((p, idx) => {
-                    container.innerHTML += `
-                        <div class="list-card">
-                            <div class="list-card-header">
-                                <span>📅 ${p.date} om <span class="badge-green">${p.time}</span></span>
-                                <button class="delete-btn" onclick="deletePlanned(${idx})">Wis</button>
-                            </div>
-                            <div><b>${p.type}</b> ${p.note ? '| '+p.note : ''}</div>
-                        </div>`;
+                planned.forEach(function(p, idx) {
+                    container.innerHTML += '<div class="list-card"><div class="list-card-header"><span>📅 ' + p.date + ' om <span class="badge-green">' + p.time + '</span></span><button class="delete-btn" onclick="deletePlanned(' + idx + ')">Wis</button></div><div><b>' + p.type + '</b> ' + (p.note ? '| '+p.note : '') + '</div></div>';
                 });
             }
         }
@@ -578,7 +555,7 @@
                     let y = currDate.getFullYear();
                     let m = String(currDate.getMonth() + 1).padStart(2, '0');
                     let d = String(currDate.getDate()).padStart(2, '0');
-                    planned.push({ date: `${y}-${m}-${d}`, time, type, repeat, note });
+                    planned.push({ date: y + '-' + m + '-' + d, time: time, type: type, repeat: repeat, note: note });
                 }
                 if (repeat === 'none') break;
                 currDate.setDate(currDate.getDate() + 1);
@@ -589,7 +566,7 @@
             checkTodayPlanning();
             renderPlannedList();
             closeModal('planningModal');
-            alert('Afspraak/afspraken succesvol ingepland!');
+            alert('Afspraak succesvol ingepland!');
         }
 
         async function deletePlanned(idx) {
@@ -603,7 +580,7 @@
             const select = document.getElementById('nurseSelect');
             if (!select) return;
             select.innerHTML = '';
-            nurses.forEach(n => {
+            nurses.forEach(function(n) {
                 const opt = document.createElement('option');
                 opt.value = n;
                 opt.textContent = n;
@@ -617,16 +594,9 @@
             row.className = 'measurement-row';
             
             const now = new Date();
-            const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            const timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
 
-            row.innerHTML = `
-                <input type="text" style="width:75px;" placeholder="Tijd" value="${timeStr}" class="m-time">
-                <input type="number" placeholder="Sys" class="m-sys">
-                <span style="color:var(--text-muted);">/</span>
-                <input type="number" placeholder="Dia" class="m-dia">
-                <input type="number" placeholder="HR" class="m-hr">
-                <button type="button" class="btn-small-del" onclick="this.parentElement.remove()">✕</button>
-            `;
+            row.innerHTML = '<input type="text" style="width:75px;" placeholder="Tijd" value="' + timeStr + '" class="m-time"><input type="number" placeholder="Sys" class="m-sys"><span style="color:var(--text-muted);">/</span><input type="number" placeholder="Dia" class="m-dia"><input type="number" placeholder="HR" class="m-hr"><button type="button" class="btn-small-del" onclick="this.parentElement.remove()">✕</button>';
             container.appendChild(row);
         }
 
@@ -646,13 +616,8 @@
             const container = document.getElementById('nurseListContainer');
             if (!container) return;
             container.innerHTML = '';
-            nurses.forEach((n, idx) => {
-                container.innerHTML += `
-                    <div class="list-card" style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-weight:bold;">${n}</span>
-                        <button class="delete-btn" onclick="deleteNurse(${idx})">Wis</button>
-                    </div>
-                `;
+            nurses.forEach(function(n, idx) {
+                container.innerHTML += '<div class="list-card" style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:bold;">' + n + '</span><button class="delete-btn" onclick="deleteNurse(' + idx + ')">Wis</button></div>';
             });
         }
 
@@ -669,7 +634,7 @@
 
         function updateFormulaText() {
             const offset = parseFloat(document.getElementById('dialysisType').value);
-            document.getElementById('ufFormulaText').innerText = `Formule: Pre - Droog (${dryWeight}) + ${offset}`;
+            document.getElementById('ufFormulaText').innerText = 'Formule: Pre - Droog (' + dryWeight + ') + ' + offset;
         }
 
         function calculateUF() {
@@ -708,7 +673,7 @@
             return ufFormatted;
         }
 
-        async function syncWithCloud(showAlert = false) {
+        async function syncWithCloud(showAlert) {
             if (!apiKey) {
                 if (showAlert) alert('Stel eerst je API Key in via het wolkje (☁️).');
                 return;
@@ -725,7 +690,7 @@
                             'X-Master-Key': apiKey,
                             'X-Bin-Private': 'true'
                         },
-                        body: JSON.stringify({ sessions: [], planned: [], pdfTargetTime, pdfGeneratedDays })
+                        body: JSON.stringify({ sessions: [], planned: [], pdfTargetTime: pdfTargetTime, pdfGeneratedDays: pdfGeneratedDays })
                     });
                     const createData = await createRes.json();
                     if (createData.metadata && createData.metadata.id) {
@@ -734,7 +699,7 @@
                     }
                 }
 
-                const getRes = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+                const getRes = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', {
                     headers: { 'X-Master-Key': apiKey }
                 });
                 const getData = await getRes.json();
@@ -764,13 +729,13 @@
         async function pushToCloud() {
             if (!apiKey || !binId) return;
             try {
-                await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+                await fetch('https://api.jsonbin.io/v3/b/' + binId, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Master-Key': apiKey
                     },
-                    body: JSON.stringify({ sessions: sessions, planned: planned, pdfTargetTime, pdfGeneratedDays })
+                    body: JSON.stringify({ sessions: sessions, planned: planned, pdfTargetTime: pdfTargetTime, pdfGeneratedDays: pdfGeneratedDays })
                 });
                 document.getElementById('syncStatus').innerText = 'Cloud: Opgeslagen';
             } catch (error) {
@@ -799,7 +764,7 @@
             const shuntFlow = document.getElementById('shuntFlow').value;
 
             const measurements = [];
-            document.querySelectorAll('.measurement-row').forEach(row => {
+            document.querySelectorAll('.measurement-row').forEach(function(row) {
                 measurements.push({
                     time: row.querySelector('.m-time').value,
                     sys: row.querySelector('.m-sys').value || '-',
@@ -809,7 +774,7 @@
             });
 
             const nurseSelect = document.getElementById('nurseSelect');
-            const selectedNurses = Array.from(nurseSelect.selectedOptions).map(opt => opt.value);
+            const selectedNurses = Array.from(nurseSelect.selectedOptions).map(function(opt) { return opt.value; });
 
             const notes = document.getElementById('notes').value;
 
@@ -819,23 +784,21 @@
             }
 
             const sessionData = {
-                appointmentDateTime, connectDateTime, stopDateTime, dialysisTypeName,
-                preWeight, postWeight: postWeight || '-', dryWeight, 
-                ufAdvice, setUf: setUf || '-', actualUf: actualUf || '-',
-                fragmin2500, fragmin5000, epo, ijzer, shuntFlow,
-                measurements, nurses: selectedNurses, notes
+                appointmentDateTime: appointmentDateTime, connectDateTime: connectDateTime, stopDateTime: stopDateTime, dialysisTypeName: dialysisTypeName,
+                preWeight: preWeight, postWeight: postWeight || '-', dryWeight: dryWeight, 
+                ufAdvice: ufAdvice, setUf: setUf || '-', actualUf: actualUf || '-',
+                fragmin2500: fragmin2500, fragmin5000: fragmin5000, epo: epo, ijzer: ijzer, shuntFlow: shuntFlow,
+                measurements: measurements, nurses: selectedNurses, notes: notes
             };
 
             if (editingSessionIndex !== null) {
-                // Bestaande sessie bijwerken
                 sessions[editingSessionIndex] = sessionData;
                 editingSessionIndex = null;
-                alert('Sessie succesvol bijgewerkt en gesynchroniseerd!');
+                alert('Sessie succesvol bijgewerkt!');
                 cancelEditMode();
             } else {
-                // Nieuwe sessie toevoegen
                 sessions.unshift(sessionData);
-                alert('Dialysesessie succesvol opgeslagen en gesynchroniseerd!');
+                alert('Dialysesessie succesvol opgeslagen!');
             }
 
             if (activePlannedIndex !== null) {
@@ -856,7 +819,7 @@
                 return;
             }
 
-            sessions.forEach((s, idx) => {
+            sessions.forEach(function(s, idx) {
                 let badge = 'badge-green';
                 if (s.ufAdvice >= 4.5) badge = 'badge-red';
                 else if (s.ufAdvice >= 4.0) badge = 'badge-orange';
@@ -872,31 +835,13 @@
                 let measHtml = '';
                 if (s.measurements && s.measurements.length > 0) {
                     measHtml = '<div style="margin-top:4px; border-top:1px dashed rgba(255,255,255,0.1); padding-top:4px;"><b>Metingen:</b>';
-                    s.measurements.forEach(m => {
-                        measHtml += `<br>• ${m.time || '-'}: RR ${m.sys}/${m.dia} mmHg | HR ${m.hr} BPM`;
+                    s.measurements.forEach(function(m) {
+                        measHtml += '<br>• ' + (m.time || '-') + ': RR ' + m.sys + '/' + m.dia + ' mmHg | HR ' + m.hr + ' BPM';
                     });
                     measHtml += '</div>';
                 }
 
-                container.innerHTML += `
-                    <div class="list-card">
-                        <div class="list-card-header">
-                            <span>📅 Aansluit: ${s.connectDateTime ? s.connectDateTime.replace('T', ' ') : '-'}</span>
-                            <div class="btn-action-group">
-                                <button class="edit-btn" onclick="editSession(${idx})">Bewerk</button>
-                                <button class="delete-btn" onclick="deleteSession(${idx})">Wis</button>
-                            </div>
-                        </div>
-                        <div>Type: <b>${s.dialysisTypeName || 'Nachtdialyse (+0.3)'}</b></div>
-                        <div>Afspraak: ${s.appointmentDateTime ? s.appointmentDateTime.replace('T', ' ') : '-'}</div>
-                        <div>Stop: ${s.stopDateTime ? s.stopDateTime.replace('T', ' ') : '-'}</div>
-                        <div style="margin-top:4px;">Pre: ${s.preWeight}kg | Post: ${s.postWeight}kg | Advies UF: <span class="${badge}">${s.ufAdvice} kg</span></div>
-                        <div>Ingestelde UF: <b>${s.setUf} kg</b> | Werkelijke UF: <b>${s.actualUf} kg</b></div>
-                        <div>Flow: ${s.shuntFlow || '-'} ml/min | Verpleging: ${nursesStr}</div>
-                        <div>Med: ${meds.join(', ') || 'Geen'}</div>
-                        ${measHtml}
-                        ${s.notes ? `<div style="margin-top:4px;">Notitie: ${s.notes}</div>` : ''}
-                    </div>`;
+                container.innerHTML += '<div class="list-card"><div class="list-card-header"><span>📅 Aansluit: ' + (s.connectDateTime ? s.connectDateTime.replace('T', ' ') : '-') + '</span><div class="btn-action-group"><button class="edit-btn" onclick="editSession(' + idx + ')">Bewerk</button><button class="delete-btn" onclick="deleteSession(' + idx + ')">Wis</button></div></div><div>Type: <b>' + (s.dialysisTypeName || 'Nachtdialyse (+0.3)') + '</b></div><div>Pre: ' + s.preWeight + 'kg | Post: ' + s.postWeight + 'kg | Advies UF: <span class="' + badge + '">' + s.ufAdvice + ' kg</span></div><div>Ingestelde UF: <b>' + s.setUf + ' kg</b> | Werkelijke UF: <b>' + s.actualUf + ' kg</b></div><div>Flow: ' + (s.shuntFlow || '-') + ' ml/min | Verpleging: ' + nursesStr + '</div><div>Med: ' + (meds.join(', ') || 'Geen') + '</div>' + measHtml + (s.notes ? '<div style="margin-top:4px;">Notitie: ' + s.notes + '</div>' : '') + '</div>';
             });
         }
 
@@ -917,7 +862,7 @@
                 return;
             }
 
-            const filtered = sessions.filter(s => {
+            const filtered = sessions.filter(function(s) {
                 const sDate = s.connectDateTime ? s.connectDateTime.split('T')[0] : '';
                 return sDate >= start && sDate <= end;
             });
@@ -927,37 +872,12 @@
                 return;
             }
 
-            let reportHTML = `
-                <html>
-                <head>
-                    <title>Dialyse Rapport ${start} t/m ${end}</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; padding: 25px; color: #2d3748; line-height: 1.4; }
-                        h2 { color: #1a202c; border-bottom: 2px solid #00f2fe; padding-bottom: 8px; margin-bottom: 5px; }
-                        .period { font-size: 13px; color: #718096; margin-bottom: 20px; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-                        th, td { border: 1px solid #cbd5e0; padding: 8px; text-align: left; vertical-align: top; }
-                        th { background: #edf2f7; color: #2d3748; font-weight: bold; }
-                        .badge-green { color: #22543d; font-weight: bold; }
-                        .badge-orange { color: #dd6b20; font-weight: bold; }
-                        .badge-red { color: #e53e3e; font-weight: bold; }
-                    </style>
-                </head>
-                <body>
-                    <h2>🩸 Dialyse & Vocht Monitor Rapport</h2>
-                    <div class="period"><b>Periode:</b> ${start} t/m ${end} | <b>Vast Drooggewicht:</b> ${dryWeight} kg</div>
-                    <table>
-                        <tr>
-                            <th>Datum & Type</th>
-                            <th>Gewichten (kg)</th>
-                            <th>UF (Advies / Ing / Werk)</th>
-                            <th>Medicatie</th>
-                            <th>Flow & Verpleging</th>
-                            <th>Metingen (RR & HR)</th>
-                        </tr>
-            `;
+            let reportHTML = '<html><head><title>Dialyse Rapport</title><style>body { font-family: Arial, sans-serif; padding: 25px; color: #2d3748; } h2 { color: #1a202c; border-bottom: 2px solid #00f2fe; padding-bottom: 8px; } table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; } th, td { border: 1px solid #cbd5e0; padding: 8px; text-align: left; } th { background: #edf2f7; }</style></head><body>';
+            reportHTML += '<h2>🩸 Dialyse & Vocht Monitor Rapport</h2>';
+            reportHTML += '<div style="font-size:13px; color:#718096; margin-bottom:20px;">Periode: ' + start + ' t/m ' + end + ' | Vast Drooggewicht: ' + dryWeight + ' kg</div>';
+            reportHTML += '<table><tr><th>Datum & Type</th><th>Gewichten (kg)</th><th>UF (Advies / Ing / Werk)</th><th>Medicatie</th><th>Flow & Verpleging</th><th>Metingen</th></tr>';
 
-            filtered.forEach(s => {
+            filtered.forEach(function(s) {
                 let meds = [];
                 if (s.fragmin2500) meds.push('Fragmin 2500');
                 if (s.fragmin5000) meds.push('Fragmin 5000');
@@ -965,38 +885,12 @@
                 if (s.ijzer) meds.push('Ijzer');
 
                 let nursesStr = s.nurses && s.nurses.length > 0 ? s.nurses.join(', ') : (s.nurse || '-');
+                let measStr = (s.measurements && s.measurements.length > 0) ? s.measurements.map(function(m) { return m.time + ': ' + m.sys + '/' + m.dia + ' (' + m.hr + 'bpm)'; }).join('<br>') : '-';
 
-                let measStr = '';
-                if (s.measurements && s.measurements.length > 0) {
-                    measStr = s.measurements.map(m => `${m.time || '-'}: ${m.sys}/${m.dia} (${m.hr}bpm)`).join('<br>');
-                } else {
-                    measStr = '-';
-                }
-
-                let badge = 'badge-green';
-                if (s.ufAdvice >= 4.5) badge = 'badge-red';
-                else if (s.ufAdvice >= 4.0) badge = 'badge-orange';
-
-                reportHTML += `
-                    <tr>
-                        <td><b>Aansluit:</b> ${s.connectDateTime ? s.connectDateTime.replace('T', ' ') : '-'}<br><small>${s.dialysisTypeName || 'Nachtdialyse'}</small></td>
-                        <td>Pre: ${s.preWeight}<br>Post: ${s.postWeight}<br>Droog: ${s.dryWeight || dryWeight}</td>
-                        <td>Advies: <span class="${badge}">${s.ufAdvice} kg</span><br>Ing: ${s.setUf} kg<br>Werk: ${s.actualUf} kg</td>
-                        <td>${meds.join(', ') || 'Geen'}</td>
-                        <td>Flow: ${s.shuntFlow || '-'} ml/min<br>Verpl: ${nursesStr}</td>
-                        <td>${measStr}</td>
-                    </tr>
-                `;
+                reportHTML += '<tr><td><b>' + (s.connectDateTime ? s.connectDateTime.replace('T', ' ') : '-') + '</b><br><small>' + (s.dialysisTypeName || 'Nachtdialyse') + '</small></td><td>Pre: ' + s.preWeight + '<br>Post: ' + s.postWeight + '</td><td>Advies: ' + s.ufAdvice + ' kg<br>Ing: ' + s.setUf + ' kg<br>Werk: ' + s.actualUf + ' kg</td><td>' + (meds.join(', ') || 'Geen') + '</td><td>Flow: ' + (s.shuntFlow || '-') + ' ml/min<br>Verpl: ' + nursesStr + '</td><td>' + measStr + '</td></tr>';
             });
 
-            reportHTML += `
-                    </table>
-                    <script>
-                        window.onload = function() { window.print(); }
-                    <\/script>
-                </body>
-                </html>
-            `;
+            reportHTML += '</table><script>window.onload = function() { window.print(); };<\/script></body></html>';
 
             const win = window.open('', '_blank');
             win.document.write(reportHTML);
@@ -1013,7 +907,7 @@
                 return;
             }
 
-            const filtered = sessions.filter(s => {
+            const filtered = sessions.filter(function(s) {
                 const sDate = s.connectDateTime ? s.connectDateTime.split('T')[0] : '';
                 return sDate >= start && sDate <= end;
             });
@@ -1025,7 +919,7 @@
 
             let csv = 'Afspraak Datum;Aansluit Datum;Stop Datum;Type;Pre Gewicht;Post Gewicht;Drooggewicht;UF Advies;UF Ingesteld;UF Werkelijk;Fragmin 2500;Fragmin 5000;Epo;Ijzer;Shuntflow;Verpleging;Metingen;Notities\n';
 
-            filtered.forEach(s => {
+            filtered.forEach(function(s) {
                 let meds = [];
                 if (s.fragmin2500) meds.push('Fragmin 2500');
                 if (s.fragmin5000) meds.push('Fragmin 5000');
@@ -1033,19 +927,15 @@
                 if (s.ijzer) meds.push('Ijzer');
 
                 let nursesStr = s.nurses && s.nurses.length > 0 ? s.nurses.join(' & ') : (s.nurse || '-');
+                let measStr = (s.measurements && s.measurements.length > 0) ? s.measurements.map(function(m) { return m.time + ': ' + m.sys + '/' + m.dia + ' HR:' + m.hr; }).join(' | ') : '';
 
-                let measStr = '';
-                if (s.measurements && s.measurements.length > 0) {
-                    measStr = s.measurements.map(m => `${m.time}: ${m.sys}/${m.dia} HR:${m.hr}`).join(' | ');
-                }
-
-                csv += `"${s.appointmentDateTime || ''}";"${s.connectDateTime || ''}";"${s.stopDateTime || ''}";"${s.dialysisTypeName || ''}";"${s.preWeight || ''}";"${s.postWeight || ''}";"${s.dryWeight || dryWeight}";"${s.ufAdvice || ''}";"${s.setUf || ''}";"${s.actualUf || ''}";"${s.fragmin2500 ? 'Ja' : 'Nee'}";"${s.fragmin5000 ? 'Ja' : 'Nee'}";"${s.epo ? 'Ja' : 'Nee'}";"${s.ijzer ? 'Ja' : 'Nee'}";"${s.shuntFlow || ''}";"${nursesStr}";"${measStr}";"${s.notes || ''}"\n`;
+                csv += '"' + (s.appointmentDateTime || '') + '";"' + (s.connectDateTime || '') + '";"' + (s.stopDateTime || '') + '";"' + (s.dialysisTypeName || '') + '";"' + (s.preWeight || '') + '";"' + (s.postWeight || '') + '";"' + (s.dryWeight || dryWeight) + '";"' + (s.ufAdvice || '') + '";"' + (s.setUf || '') + '";"' + (s.actualUf || '') + '";"' + (s.fragmin2500 ? 'Ja' : 'Nee') + '";"' + (s.fragmin5000 ? 'Ja' : 'Nee') + '";"' + (s.epo ? 'Ja' : 'Nee') + '";"' + (s.ijzer ? 'Ja' : 'Nee') + '";"' + (s.shuntFlow || '') + '";"' + nursesStr + '";"' + measStr + '";"' + (s.notes || '') + '"\n';
             });
 
             const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `Dialyse_Rapport_${start}_tot_${end}.csv`;
+            link.download = 'Dialyse_Rapport_' + start + '_tot_' + end + '.csv';
             link.click();
             closeModal('exportModal');
         }
