@@ -28,6 +28,12 @@
         .icon-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--border-glass); color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .icon-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
 
+        /* Automatische PDF-banner */
+        .auto-pdf-banner { background: rgba(0, 242, 254, 0.1); border: 2px solid var(--neon-cyan); border-radius: 12px; padding: 14px; width: 100%; max-width: 500px; margin-bottom: 15px; display: none; text-align: center; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0,242,254, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(0,242,254, 0); } 100% { box-shadow: 0 0 0 0 rgba(0,242,254, 0); } }
+        .auto-pdf-title { font-size: 12px; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase; margin-bottom: 6px; }
+        .btn-auto-pdf { background: var(--neon-cyan); color: #030508; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; width: 100%; margin-top: 6px; }
+
         .card { background: var(--surface-card); border: 1px solid var(--border-glass); border-radius: 16px; padding: 20px; width: 100%; max-width: 500px; margin-bottom: 15px; backdrop-filter: blur(10px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
         .card-title { font-size: 12px; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
 
@@ -64,7 +70,6 @@
         .btn-submit { width: 100%; padding: 14px; background: var(--neon-cyan); color: #030508; border: none; border-radius: 10px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; box-shadow: 0 0 15px rgba(0,242,254,0.25); }
         .btn-submit:active { transform: scale(0.98); }
 
-        /* Modals */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 100; }
         .modal-content { background: #0f172a; border: 1px solid var(--border-glass); padding: 22px; border-radius: 16px; width: 90%; max-width: 440px; text-align: center; max-height: 85vh; overflow-y: auto; }
         .modal-content h3 { color: var(--neon-cyan); margin-bottom: 14px; font-size: 17px; }
@@ -98,6 +103,13 @@
             <button class="icon-btn" onclick="openModal('settingsModal')" title="Instellingen & Config">☁️</button>
         </div>
     </header>
+
+    <!-- Automatische PDF Melding & Knop -->
+    <div class="auto-pdf-banner" id="autoPdfBanner">
+        <div class="auto-pdf-title">⏰ Tijd bereikt! Dagelijkse Dialyse-PDF nog niet gemaakt</div>
+        <div style="font-size: 12px; color: var(--text-main);">Genereer en download het rapport om de melding te voltooien.</div>
+        <button class="btn-auto-pdf" onclick="generateAutoPDF()">📄 GENEREER DAG-PDF NU</button>
+    </div>
 
     <div class="scheduled-banner" id="scheduledBanner">
         <div class="scheduled-title">📌 Geplande Afspraak Vandaag!</div>
@@ -265,9 +277,12 @@
     <!-- Instellingen Modal -->
     <div class="modal" id="settingsModal">
         <div class="modal-content">
-            <h3>Instellingen & Config</h3>
+            <h3>Instellingen & Cloud</h3>
             <label>Vast Drooggewicht (kg):</label>
             <input type="number" step="0.1" id="configDryWeight" value="109.0">
+
+            <label style="margin-top: 10px;">Automatische PDF Tijd:</label>
+            <input type="time" id="configPdfTime" value="17:00">
 
             <label style="margin-top: 14px;">JSONBin API Key:</label>
             <input type="text" id="apiKeyInput" placeholder="API Key ($2a$10$...)">
@@ -287,8 +302,10 @@
         let planned = [];
         let nurses = JSON.parse(localStorage.getItem('dialyse_nurses')) || ['Zuster A', 'Broeder B'];
         let dryWeight = parseFloat(localStorage.getItem('dialyse_dry_weight')) || 109.0;
-        let apiKey = localStorage.getItem('dialyse_jsonbin_apikey') || '';
-        let binId = localStorage.getItem('dialyse_jsonbin_binid') || '';
+        let pdfTargetTime = localStorage.getItem('dialysis_pdf_time') || '17:00';
+        let pdfGeneratedDays = JSON.parse(localStorage.getItem('dialysis_pdf_generated')) || {};
+        let apiKey = localStorage.getItem('dialysis_jsonbin_apikey') || '';
+        let binId = localStorage.getItem('dialysis_jsonbin_binid') || '';
 
         window.onload = async () => {
             const now = new Date();
@@ -315,7 +332,37 @@
                 document.getElementById('syncStatus').innerText = 'Cloud: Niet ingesteld';
             }
             checkTodayPlanning();
+            checkAutoPDFTrigger();
+            setInterval(checkAutoPDFTrigger, 60000);
         };
+
+        function checkAutoPDFTrigger() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            if (pdfGeneratedDays[todayStr]) {
+                document.getElementById('autoPdfBanner').style.display = 'none';
+                return;
+            }
+
+            const now = new Date();
+            const currentTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+            if (currentTime >= pdfTargetTime) {
+                document.getElementById('autoPdfBanner').style.display = 'block';
+            } else {
+                document.getElementById('autoPdfBanner').style.display = 'none';
+            }
+        }
+
+        function generateAutoPDF() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('exportStartDate').value = todayStr;
+            document.getElementById('exportEndDate').value = todayStr;
+            generatePDFReport();
+
+            pdfGeneratedDays[todayStr] = true;
+            localStorage.setItem('dialysis_pdf_generated', JSON.stringify(pdfGeneratedDays));
+            document.getElementById('autoPdfBanner').style.display = 'none';
+        }
 
         function openModal(modalId) {
             const target = document.getElementById(modalId);
@@ -326,6 +373,7 @@
             if (modalId === 'nurseModal') renderNurseList();
             if (modalId === 'settingsModal') {
                 document.getElementById('configDryWeight').value = dryWeight;
+                document.getElementById('configPdfTime').value = pdfTargetTime;
                 document.getElementById('apiKeyInput').value = apiKey;
                 document.getElementById('binIdInput').value = binId;
             }
@@ -556,7 +604,7 @@
                             'X-Master-Key': apiKey,
                             'X-Bin-Private': 'true'
                         },
-                        body: JSON.stringify({ sessions: [], planned: [] })
+                        body: JSON.stringify({ sessions: [], planned: [], pdfTargetTime, pdfGeneratedDays })
                     });
                     const createData = await createRes.json();
                     if (createData.metadata && createData.metadata.id) {
@@ -573,10 +621,19 @@
                 if (getData.record) {
                     if (getData.record.sessions) sessions = getData.record.sessions;
                     if (getData.record.planned) planned = getData.record.planned;
+                    if (getData.record.pdfTargetTime) {
+                        pdfTargetTime = getData.record.pdfTargetTime;
+                        localStorage.setItem('dialysis_pdf_time', pdfTargetTime);
+                    }
+                    if (getData.record.pdfGeneratedDays) {
+                        pdfGeneratedDays = getData.record.pdfGeneratedDays;
+                        localStorage.setItem('dialysis_pdf_generated', JSON.stringify(pdfGeneratedDays));
+                    }
                     document.getElementById('syncStatus').innerText = 'Cloud: Verbonden';
                     if (showAlert) alert('Verbonden & gesynchroniseerd!');
                 }
                 checkTodayPlanning();
+                checkAutoPDFTrigger();
             } catch (error) {
                 console.error(error);
                 document.getElementById('syncStatus').innerText = 'Cloud: Fout bij sync';
@@ -592,7 +649,7 @@
                         'Content-Type': 'application/json',
                         'X-Master-Key': apiKey
                     },
-                    body: JSON.stringify({ sessions: sessions, planned: planned })
+                    body: JSON.stringify({ sessions: sessions, planned: planned, pdfTargetTime, pdfGeneratedDays })
                 });
                 document.getElementById('syncStatus').innerText = 'Cloud: Opgeslagen';
             } catch (error) {
@@ -860,14 +917,18 @@
                 localStorage.setItem('dialyse_dry_weight', dryWeight);
             }
 
+            pdfTargetTime = document.getElementById('configPdfTime').value || '17:00';
+            localStorage.setItem('dialysis_pdf_time', pdfTargetTime);
+
             apiKey = document.getElementById('apiKeyInput').value.trim();
             binId = document.getElementById('binIdInput').value.trim();
-            localStorage.setItem('dialyse_jsonbin_apikey', apiKey);
-            localStorage.setItem('dialyse_jsonbin_binid', binId);
+            localStorage.setItem('dialysis_jsonbin_apikey', apiKey);
+            localStorage.setItem('dialysis_jsonbin_binid', binId);
 
             calculateUF();
             closeModal('settingsModal');
             syncWithCloud(true);
+            checkAutoPDFTrigger();
         }
     </script>
 </body>
