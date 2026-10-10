@@ -48,6 +48,12 @@
         .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-main); cursor: pointer; text-transform: none; }
         .checkbox-label input { width: 18px; height: 18px; accent-color: var(--neon-cyan); cursor: pointer; }
 
+        /* Metingen rijen */
+        .measurement-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; background: #0f172a; border: 1px solid var(--border-glass); padding: 8px; border-radius: 8px; }
+        .measurement-row input { padding: 6px; font-size: 13px; text-align: center; }
+        .btn-small-del { background: var(--neon-red); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-small-add { background: var(--neon-cyan); color: #030508; border: none; padding: 8px; border-radius: 8px; font-weight: 800; font-size: 12px; width: 100%; cursor: pointer; margin-bottom: 12px; }
+
         .btn-submit { width: 100%; padding: 14px; background: var(--neon-cyan); color: #030508; border: none; border-radius: 10px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; box-shadow: 0 0 15px rgba(0,242,254,0.25); }
         .btn-submit:active { transform: scale(0.98); }
 
@@ -79,14 +85,14 @@
         </div>
         <div style="display:flex; gap:6px;">
             <button class="icon-btn" onclick="openModal('historyModal')" title="Overzicht Sessies">📊</button>
-            <button class="icon-btn" onclick="openModal('settingsModal')" title="Instellingen & Drooggewicht">☁️</button>
+            <button class="icon-btn" onclick="openModal('settingsModal')" title="Instellingen & Config">☁️</button>
         </div>
     </header>
 
     <div class="card">
         <div class="card-title">Nieuwe Dialyse Sessie</div>
 
-        <!-- Datums en Tijden onder elkaar -->
+        <!-- Datums en Tijden -->
         <div class="form-group">
             <label>Afspraak Datum / Tijd:</label>
             <input type="datetime-local" id="appointmentDateTime">
@@ -109,7 +115,7 @@
             </select>
         </div>
 
-        <!-- Gewichten (Pre & Post) -->
+        <!-- Gewichten -->
         <div class="form-grid" style="margin-top: 6px;">
             <div class="form-group">
                 <label>Pre-gewicht (kg):</label>
@@ -140,7 +146,7 @@
             </div>
         </div>
 
-        <!-- Medicatie / Toevoegingen (Checkboxes) -->
+        <!-- Medicatie -->
         <label>Medicatie & Toevoegingen:</label>
         <div class="checkbox-grid">
             <label class="checkbox-label"><input type="checkbox" id="fragmin2500"> Fragmin 2500</label>
@@ -149,316 +155,28 @@
             <label class="checkbox-label"><input type="checkbox" id="ijzer"> Ijzer</label>
         </div>
 
-        <!-- Shuntflow & Bloeddruk / HR -->
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Shuntflow (ml/min):</label>
-                <input type="number" id="shuntFlow" placeholder="bijv. 1200">
-            </div>
-            <div class="form-group">
-                <label>Hartslag (BPM):</label>
-                <input type="number" id="heartRate" placeholder="bijv. 72">
-            </div>
-        </div>
-
+        <!-- Shuntflow -->
         <div class="form-group">
-            <label>Bloeddruk (Sys / Dia):</label>
-            <div style="display:flex; gap:8px;">
-                <input type="number" id="bpSys" placeholder="130">
-                <input type="number" id="bpDia" placeholder="80">
-            </div>
+            <label>Shuntflow (ml/min):</label>
+            <input type="number" id="shuntFlow" placeholder="bijv. 1200">
         </div>
 
+        <!-- Meerdere Bloeddruk & Hartslag Metingen -->
+        <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span>Bloeddruk & Hartslag Metingen:</span>
+        </label>
+        <div id="measurementsContainer"></div>
+        <button type="button" class="btn-small-add" onclick="addMeasurementRow()">+ Meting toevoegen</button>
+
+        <!-- Verpleging & Notities -->
         <div class="form-grid">
             <div class="form-group">
-                <label>Verpleging / Naam:</label>
-                <input type="text" id="nurse" placeholder="Naam verpleegkundige">
+                <label style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>Verpleging:</span>
+                    <span style="color:var(--neon-cyan); cursor:pointer; font-size:10px;" onclick="openModal('nurseModal')">⚙️ Beheer namen</span>
+                </label>
+                <select id="nurseSelect"></select>
             </div>
             <div class="form-group">
                 <label>Notities / Welzijn:</label>
-                <input type="text" id="notes" placeholder="Bijv. moe, kramp...">
-            </div>
-        </div>
-
-        <button class="btn-submit" onclick="saveSession()">SESSIE OPSLAAN & SYNC</button>
-    </div>
-
-    <!-- Historie Modal -->
-    <div class="modal" id="historyModal">
-        <div class="modal-content">
-            <h3>Opgeslagen Sessies</h3>
-            <div class="list-container" id="historyListContainer"></div>
-            <button class="btn-confirm" onclick="closeModal('historyModal')" style="width:100%;">Sluiten</button>
-        </div>
-    </div>
-
-    <!-- Instellingen Modal -->
-    <div class="modal" id="settingsModal">
-        <div class="modal-content">
-            <h3>Instellingen & Config</h3>
-            <label>Vast Drooggewicht (kg):</label>
-            <input type="number" step="0.1" id="configDryWeight" value="109.0">
-
-            <label style="margin-top: 14px;">JSONBin API Key:</label>
-            <input type="text" id="apiKeyInput" placeholder="API Key ($2a$10$...)">
-            
-            <label>JSONBin Bin ID:</label>
-            <input type="text" id="binIdInput" placeholder="Bin ID">
-            
-            <div class="modal-buttons">
-                <button class="btn-cancel" onclick="closeModal('settingsModal')">Sluiten</button>
-                <button class="btn-confirm" onclick="saveSettings()">Opslaan & Sync</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let sessions = [];
-        let dryWeight = parseFloat(localStorage.getItem('dialyse_dry_weight')) || 109.0;
-        let apiKey = localStorage.getItem('dialyse_jsonbin_apikey') || '';
-        let binId = localStorage.getItem('dialyse_jsonbin_binid') || '';
-
-        window.onload = async () => {
-            const now = new Date();
-            const pad = (n) => String(n).padStart(2, '0');
-            const localIso = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
-            
-            document.getElementById('appointmentDateTime').value = localIso;
-            document.getElementById('connectDateTime').value = localIso;
-            document.getElementById('stopDateTime').value = localIso;
-
-            updateFormulaText();
-
-            if (apiKey && binId) {
-                await syncWithCloud(false);
-            } else {
-                document.getElementById('syncStatus').innerText = 'Cloud: Niet ingesteld';
-            }
-        };
-
-        function updateFormulaText() {
-            const offset = parseFloat(document.getElementById('dialysisType').value);
-            document.getElementById('ufFormulaText').innerText = `Formule: Pre - Droog (${dryWeight}) + ${offset}`;
-        }
-
-        function calculateUF() {
-            const pre = parseFloat(document.getElementById('preWeight').value) || 0;
-            const post = parseFloat(document.getElementById('postWeight').value) || 0;
-            const offset = parseFloat(document.getElementById('dialysisType').value) || 0.3;
-            const display = document.getElementById('ufDisplay');
-
-            updateFormulaText();
-
-            // Bereken Werkelijke UF (Pre - Post)
-            if (pre > 0 && post > 0) {
-                const actual = pre - post;
-                document.getElementById('actualUf').value = actual.toFixed(1);
-            } else {
-                document.getElementById('actualUf').value = "";
-            }
-
-            // Bereken UF Advies
-            if (pre === 0) {
-                display.innerText = "0.0 kg";
-                display.className = "uf-value badge-green";
-                return 0;
-            }
-
-            const uf = pre - dryWeight + offset;
-            const ufFormatted = uf.toFixed(1);
-
-            if (uf >= 4.5) {
-                display.className = "uf-value badge-red";
-            } else if (uf >= 4.0) {
-                display.className = "uf-value badge-orange";
-            } else {
-                display.className = "uf-value badge-green";
-            }
-
-            display.innerText = ufFormatted + " kg";
-            return ufFormatted;
-        }
-
-        async function syncWithCloud(showAlert = false) {
-            if (!apiKey) {
-                if (showAlert) alert('Stel eerst je API Key in via het wolkje (☁️).');
-                return;
-            }
-
-            document.getElementById('syncStatus').innerText = 'Cloud: Synchroniseren...';
-
-            try {
-                if (!binId) {
-                    const createRes = await fetch('https://api.jsonbin.io/v3/b', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Master-Key': apiKey,
-                            'X-Bin-Private': 'true'
-                        },
-                        body: JSON.stringify({ sessions: [] })
-                    });
-                    const createData = await createRes.json();
-                    if (createData.metadata && createData.metadata.id) {
-                        binId = createData.metadata.id;
-                        localStorage.setItem('dialyse_jsonbin_binid', binId);
-                    }
-                }
-
-                const getRes = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-                    headers: { 'X-Master-Key': apiKey }
-                });
-                const getData = await getRes.json();
-
-                if (getData.record && getData.record.sessions) {
-                    sessions = getData.record.sessions;
-                    document.getElementById('syncStatus').innerText = 'Cloud: Verbonden';
-                    if (showAlert) alert('Verbonden & gesynchroniseerd!');
-                }
-            } catch (error) {
-                console.error(error);
-                document.getElementById('syncStatus').innerText = 'Cloud: Fout bij sync';
-            }
-        }
-
-        async function pushToCloud() {
-            if (!apiKey || !binId) return;
-            try {
-                await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': apiKey
-                    },
-                    body: JSON.stringify({ sessions: sessions })
-                });
-                document.getElementById('syncStatus').innerText = 'Cloud: Opgeslagen';
-            } catch (error) {
-                console.error(error);
-                document.getElementById('syncStatus').innerText = 'Cloud: Opslaan mislukt';
-            }
-        }
-
-        async function saveSession() {
-            const appointmentDateTime = document.getElementById('appointmentDateTime').value;
-            const connectDateTime = document.getElementById('connectDateTime').value;
-            const stopDateTime = document.getElementById('stopDateTime').value;
-            const dialysisTypeOffset = document.getElementById('dialysisType').value;
-            const dialysisTypeName = dialysisTypeOffset === '0.6' ? 'Dagdialyse (+0.6)' : 'Nachtdialyse (+0.3)';
-            
-            const preWeight = document.getElementById('preWeight').value;
-            const postWeight = document.getElementById('postWeight').value;
-            const ufAdvice = calculateUF();
-            const setUf = document.getElementById('setUf').value;
-            const actualUf = document.getElementById('actualUf').value;
-
-            const fragmin2500 = document.getElementById('fragmin2500').checked;
-            const fragmin5000 = document.getElementById('fragmin5000').checked;
-            const epo = document.getElementById('epo').checked;
-            const ijzer = document.getElementById('ijzer').checked;
-            
-            const shuntFlow = document.getElementById('shuntFlow').value;
-            const bpSys = document.getElementById('bpSys').value;
-            const bpDia = document.getElementById('bpDia').value;
-            const heartRate = document.getElementById('heartRate').value;
-            const nurse = document.getElementById('nurse').value;
-            const notes = document.getElementById('notes').value;
-
-            if (!preWeight) {
-                alert('Vul a.u.b. het pre-gewicht in.');
-                return;
-            }
-
-            const newSession = {
-                appointmentDateTime, connectDateTime, stopDateTime, dialysisTypeName,
-                preWeight, postWeight: postWeight || '-', dryWeight, 
-                ufAdvice, setUf: setUf || '-', actualUf: actualUf || '-',
-                fragmin2500, fragmin5000, epo, ijzer, shuntFlow,
-                bp: `${bpSys || '-'}/${bpDia || '-'}`, heartRate: heartRate || '-',
-                nurse, notes
-            };
-
-            sessions.unshift(newSession);
-            await pushToCloud();
-            alert('Dialysesessie succesvol opgeslagen en gesynchroniseerd!');
-        }
-
-        function openModal(modalId) {
-            if (modalId === 'historyModal') renderHistoryList();
-            if (modalId === 'settingsModal') {
-                document.getElementById('configDryWeight').value = dryWeight;
-                document.getElementById('apiKeyInput').value = apiKey;
-                document.getElementById('binIdInput').value = binId;
-            }
-            document.getElementById(modalId).style.display = 'flex';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        function renderHistoryList() {
-            const container = document.getElementById('historyListContainer');
-            container.innerHTML = '';
-            if (sessions.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 15px;">Nog geen sessies geregistreerd.</p>';
-                return;
-            }
-
-            sessions.forEach((s, idx) => {
-                let badge = 'badge-green';
-                if (s.ufAdvice >= 4.5) badge = 'badge-red';
-                else if (s.ufAdvice >= 4.0) badge = 'badge-orange';
-
-                let meds = [];
-                if (s.fragmin2500) meds.push('Fragmin 2500');
-                if (s.fragmin5000) meds.push('Fragmin 5000');
-                if (s.epo) meds.push('Epo');
-                if (s.ijzer) meds.push('Ijzer');
-
-                container.innerHTML += `
-                    <div class="list-card">
-                        <div class="list-card-header">
-                            <span>📅 Aansluit: ${s.connectDateTime ? s.connectDateTime.replace('T', ' ') : '-'}</span>
-                            <button class="delete-btn" onclick="deleteSession(${idx})">Wis</button>
-                        </div>
-                        <div>Type: <b>${s.dialysisTypeName || 'Nachtdialyse (+0.3)'}</b></div>
-                        <div>Afspraak: ${s.appointmentDateTime ? s.appointmentDateTime.replace('T', ' ') : '-'}</div>
-                        <div>Stop: ${s.stopDateTime ? s.stopDateTime.replace('T', ' ') : '-'}</div>
-                        <div style="margin-top:4px;">Pre: ${s.preWeight}kg | Post: ${s.postWeight}kg | Advies UF: <span class="${badge}">${s.ufAdvice} kg</span></div>
-                        <div>Ingestelde UF: <b>${s.setUf} kg</b> | Werkelijke UF: <b>${s.actualUf} kg</b></div>
-                        <div>RR: ${s.bp} | HR: ${s.heartRate} | Flow: ${s.shuntFlow || '-'} ml/min</div>
-                        <div>Med: ${meds.join(', ') || 'Geen'}</div>
-                        ${s.nurse ? `<div>Verpleging: ${s.nurse}</div>` : ''}
-                        ${s.notes ? `<div>Notitie: ${s.notes}</div>` : ''}
-                    </div>`;
-            });
-        }
-
-        async function deleteSession(idx) {
-            if (confirm('Weet je zeker dat je deze sessie wilt verwijderen?')) {
-                sessions.splice(idx, 1);
-                await pushToCloud();
-                renderHistoryList();
-            }
-        }
-
-        function saveSettings() {
-            const newDry = parseFloat(document.getElementById('configDryWeight').value);
-            if (!isNaN(newDry)) {
-                dryWeight = newDry;
-                localStorage.setItem('dialyse_dry_weight', dryWeight);
-            }
-
-            apiKey = document.getElementById('apiKeyInput').value.trim();
-            binId = document.getElementById('binIdInput').value.trim();
-            localStorage.setItem('dialyse_jsonbin_apikey', apiKey);
-            localStorage.setItem('dialyse_jsonbin_binid', binId);
-
-            calculateUF();
-            closeModal('settingsModal');
-            syncWithCloud(true);
-        }
-    </script>
-</body>
-</html>
+                <input type="text" id="
