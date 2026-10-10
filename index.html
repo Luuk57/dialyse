@@ -100,6 +100,15 @@
             <input type="datetime-local" id="stopDateTime">
         </div>
 
+        <!-- Keuze Dag of Nacht -->
+        <div class="form-group">
+            <label>Type Dialyse (Spoelvocht opslag):</label>
+            <select id="dialysisType" onchange="calculateUF()">
+                <option value="0.3" selected>Nachtdialyse (+0.3 kg)</option>
+                <option value="0.6">Dagdialyse (+0.6 kg)</option>
+            </select>
+        </div>
+
         <!-- Gewichten (Pre & Post) -->
         <div class="form-grid" style="margin-top: 6px;">
             <div class="form-group">
@@ -108,14 +117,27 @@
             </div>
             <div class="form-group">
                 <label>Post-gewicht (kg):</label>
-                <input type="number" step="0.1" id="postWeight" placeholder="bijv. 109.1">
+                <input type="number" step="0.1" id="postWeight" placeholder="bijv. 109.1" oninput="calculateUF()">
             </div>
         </div>
 
+        <!-- UF Advies Berekendoos -->
         <div class="uf-box">
             <label>Berekend UF Advies (Vochtonttrekking):</label>
             <div class="uf-value badge-green" id="ufDisplay">0.0 kg</div>
-            <div style="font-size:10px; color:var(--text-muted); margin-top:2px;" id="ufFormulaText">Formule: Pre - Droog + 0.3</div>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:2px;" id="ufFormulaText">Formule: Pre - Droog + Opslag</div>
+        </div>
+
+        <!-- UF Ingesteld & Werkelijk -->
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Ingestelde UF (kg):</label>
+                <input type="number" step="0.1" id="setUf" placeholder="bijv. 3.8">
+            </div>
+            <div class="form-group">
+                <label>Werkelijke UF (Pre - Post):</label>
+                <input type="number" step="0.1" id="actualUf" placeholder="0.0" readonly style="opacity:0.8; font-weight:700;">
+            </div>
         </div>
 
         <!-- Medicatie / Toevoegingen (Checkboxes) -->
@@ -170,7 +192,7 @@
         </div>
     </div>
 
-    <!-- Instellingen Modal (Inclusief Drooggewicht) -->
+    <!-- Instellingen Modal -->
     <div class="modal" id="settingsModal">
         <div class="modal-content">
             <h3>Instellingen & Config</h3>
@@ -205,7 +227,7 @@
             document.getElementById('connectDateTime').value = localIso;
             document.getElementById('stopDateTime').value = localIso;
 
-            document.getElementById('ufFormulaText').innerText = `Formule: Pre - Droog (${dryWeight}) + 0.3`;
+            updateFormulaText();
 
             if (apiKey && binId) {
                 await syncWithCloud(false);
@@ -214,18 +236,35 @@
             }
         };
 
+        function updateFormulaText() {
+            const offset = parseFloat(document.getElementById('dialysisType').value);
+            document.getElementById('ufFormulaText').innerText = `Formule: Pre - Droog (${dryWeight}) + ${offset}`;
+        }
+
         function calculateUF() {
             const pre = parseFloat(document.getElementById('preWeight').value) || 0;
+            const post = parseFloat(document.getElementById('postWeight').value) || 0;
+            const offset = parseFloat(document.getElementById('dialysisType').value) || 0.3;
             const display = document.getElementById('ufDisplay');
 
+            updateFormulaText();
+
+            // Bereken Werkelijke UF (Pre - Post)
+            if (pre > 0 && post > 0) {
+                const actual = pre - post;
+                document.getElementById('actualUf').value = actual.toFixed(1);
+            } else {
+                document.getElementById('actualUf').value = "";
+            }
+
+            // Bereken UF Advies
             if (pre === 0) {
                 display.innerText = "0.0 kg";
                 display.className = "uf-value badge-green";
                 return 0;
             }
 
-            // Formule: Pre gewicht - Drooggewicht + 0.3
-            const uf = pre - dryWeight + 0.3;
+            const uf = pre - dryWeight + offset;
             const ufFormatted = uf.toFixed(1);
 
             if (uf >= 4.5) {
@@ -304,13 +343,20 @@
             const appointmentDateTime = document.getElementById('appointmentDateTime').value;
             const connectDateTime = document.getElementById('connectDateTime').value;
             const stopDateTime = document.getElementById('stopDateTime').value;
+            const dialysisTypeOffset = document.getElementById('dialysisType').value;
+            const dialysisTypeName = dialysisTypeOffset === '0.6' ? 'Dagdialyse (+0.6)' : 'Nachtdialyse (+0.3)';
+            
             const preWeight = document.getElementById('preWeight').value;
             const postWeight = document.getElementById('postWeight').value;
-            const uf = calculateUF();
+            const ufAdvice = calculateUF();
+            const setUf = document.getElementById('setUf').value;
+            const actualUf = document.getElementById('actualUf').value;
+
             const fragmin2500 = document.getElementById('fragmin2500').checked;
             const fragmin5000 = document.getElementById('fragmin5000').checked;
             const epo = document.getElementById('epo').checked;
             const ijzer = document.getElementById('ijzer').checked;
+            
             const shuntFlow = document.getElementById('shuntFlow').value;
             const bpSys = document.getElementById('bpSys').value;
             const bpDia = document.getElementById('bpDia').value;
@@ -324,8 +370,9 @@
             }
 
             const newSession = {
-                appointmentDateTime, connectDateTime, stopDateTime, 
-                preWeight, postWeight: postWeight || '-', dryWeight, uf,
+                appointmentDateTime, connectDateTime, stopDateTime, dialysisTypeName,
+                preWeight, postWeight: postWeight || '-', dryWeight, 
+                ufAdvice, setUf: setUf || '-', actualUf: actualUf || '-',
                 fragmin2500, fragmin5000, epo, ijzer, shuntFlow,
                 bp: `${bpSys || '-'}/${bpDia || '-'}`, heartRate: heartRate || '-',
                 nurse, notes
@@ -360,8 +407,8 @@
 
             sessions.forEach((s, idx) => {
                 let badge = 'badge-green';
-                if (s.uf >= 4.5) badge = 'badge-red';
-                else if (s.uf >= 4.0) badge = 'badge-orange';
+                if (s.ufAdvice >= 4.5) badge = 'badge-red';
+                else if (s.ufAdvice >= 4.0) badge = 'badge-orange';
 
                 let meds = [];
                 if (s.fragmin2500) meds.push('Fragmin 2500');
@@ -375,9 +422,11 @@
                             <span>📅 Aansluit: ${s.connectDateTime ? s.connectDateTime.replace('T', ' ') : '-'}</span>
                             <button class="delete-btn" onclick="deleteSession(${idx})">Wis</button>
                         </div>
+                        <div>Type: <b>${s.dialysisTypeName || 'Nachtdialyse (+0.3)'}</b></div>
                         <div>Afspraak: ${s.appointmentDateTime ? s.appointmentDateTime.replace('T', ' ') : '-'}</div>
                         <div>Stop: ${s.stopDateTime ? s.stopDateTime.replace('T', ' ') : '-'}</div>
-                        <div style="margin-top:4px;">Pre: ${s.preWeight}kg | Post: ${s.postWeight}kg | UF: <span class="${badge}">${s.uf} kg</span></div>
+                        <div style="margin-top:4px;">Pre: ${s.preWeight}kg | Post: ${s.postWeight}kg | Advies UF: <span class="${badge}">${s.ufAdvice} kg</span></div>
+                        <div>Ingestelde UF: <b>${s.setUf} kg</b> | Werkelijke UF: <b>${s.actualUf} kg</b></div>
                         <div>RR: ${s.bp} | HR: ${s.heartRate} | Flow: ${s.shuntFlow || '-'} ml/min</div>
                         <div>Med: ${meds.join(', ') || 'Geen'}</div>
                         ${s.nurse ? `<div>Verpleging: ${s.nurse}</div>` : ''}
@@ -406,9 +455,7 @@
             localStorage.setItem('dialyse_jsonbin_apikey', apiKey);
             localStorage.setItem('dialyse_jsonbin_binid', binId);
 
-            document.getElementById('ufFormulaText').innerText = `Formule: Pre - Droog (${dryWeight}) + 0.3`;
             calculateUF();
-
             closeModal('settingsModal');
             syncWithCloud(true);
         }
