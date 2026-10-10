@@ -35,6 +35,11 @@
         label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
         input, select, textarea { background: #0f172a; border: 1px solid var(--border-glass); border-radius: 8px; padding: 10px; color: white; font-size: 14px; font-weight: 600; outline: none; width: 100%; }
         input:focus, select:focus, textarea:focus { border-color: var(--neon-cyan); }
+        
+        /* Specifiek voor meervoudige selectie */
+        select[multiple] { height: 90px; padding: 6px; }
+        select[multiple] option { padding: 4px; border-radius: 4px; margin-bottom: 2px; }
+        select[multiple] option:checked { background: var(--neon-cyan); color: #030508; font-weight: bold; }
 
         .uf-box { background: rgba(0,242,254,0.04); border: 1px solid var(--border-glass); border-radius: 12px; padding: 14px; margin-top: 10px; margin-bottom: 12px; text-align: center; }
         .uf-value { font-size: 26px; font-weight: 900; margin-top: 4px; }
@@ -159,10 +164,10 @@
         <div class="form-grid">
             <div class="form-group">
                 <label style="display:flex; justify-content:space-between; align-items:center;">
-                    <span>Verpleging:</span>
+                    <span>Verpleging (Meerdere selecteerbaar):</span>
                     <span style="color:var(--neon-cyan); cursor:pointer; font-size:11px;" onclick="openModal('nurseModal')">⚙️ Beheer</span>
                 </label>
-                <select id="nurseSelect"></select>
+                <select id="nurseSelect" multiple title="Houd Ctrl ingedrukt om meerdere te selecteren"></select>
             </div>
             <div class="form-group">
                 <label>Notities / Welzijn:</label>
@@ -459,7 +464,10 @@
                 });
             });
 
-            const nurse = document.getElementById('nurseSelect').value;
+            // Verzamel alle geselecteerde verpleegkundigen
+            const nurseSelect = document.getElementById('nurseSelect');
+            const selectedNurses = Array.from(nurseSelect.selectedOptions).map(opt => opt.value);
+
             const notes = document.getElementById('notes').value;
 
             if (!preWeight) {
@@ -472,7 +480,7 @@
                 preWeight, postWeight: postWeight || '-', dryWeight, 
                 ufAdvice, setUf: setUf || '-', actualUf: actualUf || '-',
                 fragmin2500, fragmin5000, epo, ijzer, shuntFlow,
-                measurements, nurse, notes
+                measurements, nurses: selectedNurses, notes
             };
 
             sessions.unshift(newSession);
@@ -500,6 +508,8 @@
                 if (s.epo) meds.push('Epo');
                 if (s.ijzer) meds.push('Ijzer');
 
+                let nursesStr = s.nurses && s.nurses.length > 0 ? s.nurses.join(', ') : (s.nurse || '-');
+
                 let measHtml = '';
                 if (s.measurements && s.measurements.length > 0) {
                     measHtml = '<div style="margin-top:4px; border-top:1px dashed rgba(255,255,255,0.1); padding-top:4px;"><b>Metingen:</b>';
@@ -520,7 +530,7 @@
                         <div>Stop: ${s.stopDateTime ? s.stopDateTime.replace('T', ' ') : '-'}</div>
                         <div style="margin-top:4px;">Pre: ${s.preWeight}kg | Post: ${s.postWeight}kg | Advies UF: <span class="${badge}">${s.ufAdvice} kg</span></div>
                         <div>Ingestelde UF: <b>${s.setUf} kg</b> | Werkelijke UF: <b>${s.actualUf} kg</b></div>
-                        <div>Flow: ${s.shuntFlow || '-'} ml/min | Verpleging: ${s.nurse || '-'}</div>
+                        <div>Flow: ${s.shuntFlow || '-'} ml/min | Verpleging: ${nursesStr}</div>
                         <div>Med: ${meds.join(', ') || 'Geen'}</div>
                         ${measHtml}
                         ${s.notes ? `<div style="margin-top:4px;">Notitie: ${s.notes}</div>` : ''}
