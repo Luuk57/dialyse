@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocht & Dialyse Monitor</title>
+    <style>
+        :root {
+            --bg-base: #030508;
+            --surface-glass: rgba(13, 17, 28, 0.85);
+            --surface-card: rgba(18, 24, 38, 0.75);
+            --border-glass: rgba(0, 242, 254, 0.2);
+            --neon-cyan: #00f2fe;
+            --neon-blue: #4facfe;
+            --neon-green: #10b981;
+            --neon-orange: #f59e0b;
+            --neon-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background: var(--bg-base); color: var(--text-main); min-height: 100vh; padding: 15px; background-image: radial-gradient(circle at 50% 10%, #0c1425 0%, var(--bg-base) 100%); display: flex; flex-direction: column; align-items: center; }
+
+        header { background: var(--surface-glass); border: 1px solid var(--border-glass); border-radius: 14px; padding: 12px 18px; width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; backdrop-filter: blur(10px); }
+        .app-title { font-size: 15px; font-weight: 800; color: var(--neon-cyan); letter-spacing: 1px; }
+        .icon-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--border-glass); color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .icon-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
+
+        .card { background: var(--surface-card); border: 1px solid var(--border-glass); border-radius: 16px; padding: 20px; width: 100%; max-width: 500px; margin-bottom: 15px; backdrop-filter: blur(10px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
+        .card-title { font-size: 12px; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
+        label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
+        input, select, textarea { background: #0f172a; border: 1px solid var(--border-glass); border-radius: 8px; padding: 10px; color: white; font-size: 14px; font-weight: 600; outline: none; width: 100%; }
+        input:focus, select:focus, textarea:focus { border-color: var(--neon-cyan); }
+
+        /* Vocht & Drooggewicht berekendoos */
+        .uf-box { background: rgba(0,242,254,0.04); border: 1px solid var(--border-glass); border-radius: 12px; padding: 14px; margin-top: 10px; margin-bottom: 10px; text-align: center; }
+        .uf-value { font-size: 26px; font-weight: 900; margin-top: 4px; }
+        
+        .badge-green { color: var(--neon-green); text-shadow: 0 0 8px rgba(16,185,129,0.3); }
+        .badge-orange { color: var(--neon-orange); text-shadow: 0 0 8px rgba(245,158,11,0.3); }
+        .badge-red { color: var(--neon-red); text-shadow: 0 0 8px rgba(239,68,68,0.3); }
+
+        .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #0f172a; border: 1px solid var(--border-glass); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+        .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-main); cursor: pointer; text-transform: none; }
+        .checkbox-label input { width: 18px; height: 18px; accent-color: var(--neon-cyan); cursor: pointer; }
+
+        .btn-submit { width: 100%; padding: 14px; background: var(--neon-cyan); color: #030508; border: none; border-radius: 10px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; box-shadow: 0 0 15px rgba(0,242,254,0.25); }
+        .btn-submit:active { transform: scale(0.98); }
+
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: #0f172a; border: 1px solid var(--border-glass); padding: 22px; border-radius: 16px; width: 90%; max-width: 420px; text-align: center; max-height: 85vh; overflow-y: auto; }
+        .modal-content h3 { color: var(--neon-cyan); margin-bottom: 14px; font-size: 17px; }
+        .modal-content label { text-align: left; display: block; margin-top: 10px; }
+        
+        .list-container { max-height: 250px; overflow-y: auto; text-align: left; margin-bottom: 14px; border: 1px solid var(--border-glass); padding: 8px; border-radius: 10px; background: #070a12; }
+        .list-card { background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px; margin-bottom: 8px; font-size: 12px; }
+        .list-card-header { font-weight: 700; color: var(--neon-cyan); margin-bottom: 4px; display: flex; justify-content: space-between; }
+        .delete-btn { background: var(--neon-red); color: white; border: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 700; }
+
+        .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
+        .modal-buttons button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; }
+        .btn-cancel { background: #1e293b; color: var(--text-muted); }
+        .btn-confirm { background: var(--neon-cyan); color: #030508; }
+
+        .sync-status { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <div class="app-title">🩸 VOCHT & DIALYSE MONITOR</div>
+            <div class="sync-status" id="syncStatus">Cloud: Niet ingesteld</div>
+        </div>
+        <div style="display:flex; gap:6px;">
+            <button class="icon-btn" onclick="openModal('historyModal')" title="Overzicht Sessies">📊</button>
+            <button class="icon-btn" onclick="openModal('settingsModal')" title="Instellingen">☁️</button>
+        </div>
+    </header>
+
+    <div class="card">
+        <div class="card-title">Nieuwe Dialyse Sessie</div>
+
+        <!-- Datums -->
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Afspraak Datum/Tijd:</label>
+                <input type="datetime-local" id="appointmentDateTime">
+            </div>
+            <div class="form-group">
+                <label>Aansluit Datum/Tijd:</label>
+                <input type="datetime-local" id="connectDateTime">
+            </div>
+        </div>
+
+        <!-- Gewichten & UF Berekening -->
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Pre-gewicht (kg):</label>
+                <input type="number" step="0.1" id="preWeight" placeholder="bijv. 112.5" oninput="calculateUF()">
+            </div>
+            <div class="form-group">
+                <label>Drooggewicht (kg):</label>
+                <input type="number" step="0.1" id="dryWeight" value="109.0" readonly style="opacity:0.7;">
+            </div>
+        </div>
+
+        <div class="uf-box">
+            <label>Berekend UF Advies (Vochtonttrekking):</label>
+            <div class="uf-value badge-green" id="ufDisplay">0.0 kg</div>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Formule: Pre - Droog (109) + 0.3</div>
+        </div>
+
+        <!-- Medicatie / Toevoegingen (Checkboxes) -->
+        <label>Medicatie & Toevoegingen:</label>
+        <div class="checkbox-grid">
+            <label class="checkbox-label"><input type="checkbox" id="fragmin2500"> Fragmin 2500</label>
+            <label class="checkbox-label"><input type="checkbox" id="fragmin5000"> Fragmin 5000</label>
+            <label class="checkbox-label"><input type="checkbox" id="epo"> Epo</label>
+            <label class="checkbox-label"><input type="checkbox" id="ijzer"> Ijzer</label>
+        </div>
+
+        <!-- Shuntflow & Bloeddruk / HR -->
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Shuntflow (ml/min):</label>
+                <input type="number" id="shuntFlow" placeholder="bijv. 1200">
+            </div>
+            <div class="form-group">
+                <label>Hartslag (BPM):</label>
+                <input type="number" id="heartRate" placeholder="bijv. 72">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Bloeddruk (Sys / Dia):</label>
+            <div style="display:flex; gap:8px;">
+                <input type="number" id="bpSys" placeholder="130">
+                <input type="number" id="bpDia" placeholder="80">
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Verpleging / Naam:</label>
+                <input type="text" id="nurse" placeholder="Naam verpleegkundige">
+            </div>
+            <div class="form-group">
+                <label>Notities / Welzijn:</label>
+                <input type="text" id="notes" placeholder="Bijv. moe, kramp...">
+            </div>
+        </div>
+
+        <button class="btn-submit" onclick="saveSession()">SESSIE OPSLAAN & SYNC</button>
+    </div>
+
+    <!-- Historie Modal -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <h3>Opgeslagen Sessies</h3>
+            <div class="list-container" id="historyListContainer"></div>
+            <button class="btn-confirm" onclick="closeModal('historyModal')" style="width:100%;">Sluiten</button>
+        </div>
+    </div>
+
+    <!-- Instellingen Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <h3>JSONBin Instellingen</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Plak hier je JSONBin Master Key en Bin ID:</p>
+            <input type="text" id="apiKeyInput" placeholder="API Key ($2a$10$...)">
+            <input type="text" id="binIdInput" placeholder="Bin ID">
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('settingsModal')">Sluiten</button>
+                <button class="btn-confirm" onclick="saveSettings()">Opslaan & Sync</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sessions = [];
+        let apiKey = localStorage.getItem('dialyse_jsonbin_apikey') || '';
+        let binId = localStorage.getItem('dialyse_jsonbin_binid') || '';
+
+        window.onload = async () => {
+            const now = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            const localIso = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            
+            document.getElementById('appointmentDateTime').value = localIso;
+            document.getElementById('connectDateTime').value = localIso;
+
+            if (apiKey && binId) {
+                await syncWithCloud(false);
+            } else {
+                document.getElementById('syncStatus').innerText = 'Cloud: Niet ingesteld';
+            }
+        };
+
+        function calculateUF() {
+            const pre = parseFloat(document.getElementById('preWeight').value) || 0;
+            const display = document.getElementById('ufDisplay');
+
+            if (pre === 0) {
+                display.innerText = "0.0 kg";
+                display.className = "uf-value badge-green";
+                return 0;
+            }
+
+            // Formule: Pre - Drooggewicht (109) + 0.3
+            const uf = pre - 109.0 + 0.3;
+            const ufFormatted = uf.toFixed(1);
+
+            if (uf >= 4.5) {
+                display.className = "uf-value badge-red";
+            } else if (uf >= 4.0) {
+                display.className = "uf-value badge-orange";
+            } else {
+                display.className = "uf-value badge-green";
+            }
+
+            display.innerText = ufFormatted + " kg";
+            return ufFormatted;
+        }
+
+        async function syncWithCloud(showAlert = false) {
+            if (!apiKey) {
+                if (showAlert) alert('Stel eerst je API Key in via het wolkje (☁️).');
+                return;
+            }
+
+            document.getElementById('syncStatus').innerText = 'Cloud: Synchroniseren...';
+
+            try {
+                if (!binId) {
+                    const createRes = await fetch('https://api.jsonbin.io/v3/b', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Master-Key': apiKey,
+                            'X-Bin-Private': 'true'
+                        },
+                        body: JSON.stringify({ sessions: [] })
+                    });
+                    const createData = await createRes.json();
+                    if (createData.metadata && createData.metadata.id) {
+                        binId = createData.metadata.id;
+                        localStorage.setItem('dialyse_jsonbin_binid', binId);
+                    }
+                }
+
+                const getRes = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+                    headers: { 'X-Master-Key': apiKey }
+                });
+                const getData = await getRes.json();
+
+                if (getData.record && getData.record.sessions) {
+                    sessions = getData.record.sessions;
+                    document.getElementById('syncStatus').innerText = 'Cloud: Verbonden';
+                    if (showAlert) alert('Verbonden & gesynchroniseerd!');
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('syncStatus').innerText = 'Cloud: Fout bij sync';
+            }
+        }
+
+        async function pushToCloud() {
+            if (!apiKey || !binId) return;
+            try {
+                await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': apiKey
+                    },
+                    body: JSON.stringify({ sessions: sessions })
+                });
+                document.getElementById('syncStatus').innerText = 'Cloud: Opgeslagen';
+            } catch (error) {
+                console.error(error);
+                document.getElementById('syncStatus').innerText = 'Cloud: Opslaan mislukt';
+            }
+        }
+
+        async function saveSession() {
+            const appointmentDateTime = document.getElementById('appointmentDateTime').value;
+            const connectDateTime = document.getElementById('connectDateTime').value;
+            const preWeight = document.getElementById('preWeight').value;
+            const uf = calculateUF();
+            const fragmin2500 = document.getElementById('fragmin2500').checked;
+            const fragmin5000 = document.getElementById('fragmin5000').checked;
+            const epo = document.getElementById('epo').checked;
+            const ijzer = document.getElementById('ijzer').checked;
+            const shuntFlow = document.getElementById('shuntFlow').value;
+            const bpSys = document.getElementById('bpSys').value;
+            const bpDia = document.getElementById('bpDia').value;
+            const heartRate = document.getElementById('heartRate').value;
+            const nurse = document.getElementById('nurse').value;
+            const notes = document.getElementById('notes').value;
+
+            if (!preWeight) {
+                alert('Vul a.u.b. het pre-gewicht in.');
+                return;
+            }
+
+            const newSession = {
+                appointmentDateTime, connectDateTime, preWeight, dryWeight: 109.0, uf,
+                fragmin2500, fragmin5000, epo, ijzer, shuntFlow,
+                bp: `${bpSys || '-'}/${bpDia || '-'}`, heartRate: heartRate || '-',
+                nurse, notes
+            };
+
+            sessions.unshift(newSession);
+            await pushToCloud();
+            alert('Dialysesessie succesvol opgeslagen en gesynchroniseerd!');
+        }
+
+        function openModal(modalId) {
+            if (modalId === 'historyModal') renderHistoryList();
+            if (modalId === 'settingsModal') {
+                document.getElementById('apiKeyInput').value = apiKey;
+                document.getElementById('binIdInput').value = binId;
+            }
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function renderHistoryList() {
+            const container = document.getElementById('historyListContainer');
+            container.innerHTML = '';
+            if (sessions.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 15px;">Nog geen sessies geregistreerd.</p>';
+                return;
+            }
+
+            sessions.forEach((s, idx) => {
+                let badge = 'badge-green';
+                if (s.uf >= 4.5) badge = 'badge-red';
+                else if (s.uf >= 4.0) badge = 'badge-orange';
+
+                let meds = [];
+                if (s.fragmin2500) meds.push('Fragmin 2500');
+                if (s.fragmin5000) meds.push('Fragmin 5000');
+                if (s.epo) meds.push('Epo');
+                if (s.ijzer) meds.push('Ijzer');
+
+                container.innerHTML += `
+                    <div class="list-card">
+                        <div class="list-card-header">
+                            <span>📅 Aansluit: ${s.connectDateTime.replace('T', ' ')}</span>
+                            <button class="delete-btn" onclick="deleteSession(${idx})">Wis</button>
+                        </div>
+                        <div>Pre: ${s.preWeight}kg | UF: <span class="${badge}">${s.uf} kg</span></div>
+                        <div>RR: ${s.bp} | HR: ${s.heartRate} | Flow: ${s.shuntFlow || '-'} ml/min</div>
+                        <div>Med: ${meds.join(', ') || 'Geen'}</div>
+                        ${s.nurse ? `<div>Verpleging: ${s.nurse}</div>` : ''}
+                        ${s.notes ? `<div>Notitie: ${s.notes}</div>` : ''}
+                    </div>`;
+            });
+        }
+
+        async function deleteSession(idx) {
+            if (confirm('Weet je zeker dat je deze sessie wilt verwijderen?')) {
+                sessions.splice(idx, 1);
+                await pushToCloud();
+                renderHistoryList();
+            }
+        }
+
+        function saveSettings() {
+            apiKey = document.getElementById('apiKeyInput').value.trim();
+            binId = document.getElementById('binIdInput').value.trim();
+            localStorage.setItem('dialyse_jsonbin_apikey', apiKey);
+            localStorage.setItem('dialyse_jsonbin_binid', binId);
+            closeModal('settingsModal');
+            syncWithCloud(true);
+        }
+    </script>
+</body>
+</html>
