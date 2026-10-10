@@ -24,11 +24,16 @@
 
         header { background: var(--surface-glass); border: 1px solid var(--border-glass); border-radius: 14px; padding: 12px 18px; width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; backdrop-filter: blur(10px); }
         .app-title { font-size: 15px; font-weight: 800; color: var(--neon-cyan); letter-spacing: 1px; }
+        .header-btns { display: flex; gap: 6px; align-items: center; }
         .icon-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--border-glass); color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .icon-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
 
         .card { background: var(--surface-card); border: 1px solid var(--border-glass); border-radius: 16px; padding: 20px; width: 100%; max-width: 500px; margin-bottom: 15px; backdrop-filter: blur(10px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
         .card-title { font-size: 12px; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+
+        .scheduled-banner { background: rgba(245, 158, 11, 0.1); border: 1px dashed var(--neon-orange); border-radius: 12px; padding: 12px; width: 100%; max-width: 500px; margin-bottom: 15px; display: none; }
+        .scheduled-title { font-size: 11px; font-weight: 800; color: var(--neon-orange); text-transform: uppercase; margin-bottom: 4px; }
+        .scheduled-details { font-size: 13px; color: var(--text-main); font-weight: 600; }
 
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
         .form-group { display: flex; flex-direction: column; margin-bottom: 12px; }
@@ -36,7 +41,6 @@
         input, select, textarea { background: #0f172a; border: 1px solid var(--border-glass); border-radius: 8px; padding: 10px; color: white; font-size: 14px; font-weight: 600; outline: none; width: 100%; }
         input:focus, select:focus, textarea:focus { border-color: var(--neon-cyan); }
         
-        /* Specifiek voor meervoudige selectie */
         select[multiple] { height: 90px; padding: 6px; }
         select[multiple] option { padding: 4px; border-radius: 4px; margin-bottom: 2px; }
         select[multiple] option:checked { background: var(--neon-cyan); color: #030508; font-weight: bold; }
@@ -60,9 +64,9 @@
         .btn-submit { width: 100%; padding: 14px; background: var(--neon-cyan); color: #030508; border: none; border-radius: 10px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; box-shadow: 0 0 15px rgba(0,242,254,0.25); }
         .btn-submit:active { transform: scale(0.98); }
 
-        /* Pop-up Modals */
+        /* Modals */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: #0f172a; border: 1px solid var(--border-glass); padding: 22px; border-radius: 16px; width: 90%; max-width: 420px; text-align: center; max-height: 85vh; overflow-y: auto; }
+        .modal-content { background: #0f172a; border: 1px solid var(--border-glass); padding: 22px; border-radius: 16px; width: 90%; max-width: 440px; text-align: center; max-height: 85vh; overflow-y: auto; }
         .modal-content h3 { color: var(--neon-cyan); margin-bottom: 14px; font-size: 17px; }
         .modal-content label { text-align: left; display: block; margin-top: 10px; }
         
@@ -75,6 +79,7 @@
         .modal-buttons button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; }
         .btn-cancel { background: #1e293b; color: var(--text-muted); }
         .btn-confirm { background: var(--neon-cyan); color: #030508; }
+        .btn-excel { background: #10b981; color: white; }
 
         .sync-status { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
     </style>
@@ -86,11 +91,18 @@
             <div class="app-title">🩸 VOCHT & DIALYSE MONITOR</div>
             <div class="sync-status" id="syncStatus">Cloud: Niet ingesteld</div>
         </div>
-        <div style="display:flex; gap:6px;">
+        <div class="header-btns">
+            <button class="icon-btn" onclick="openModal('planningModal')" title="Afspraken & Planning">📅</button>
+            <button class="icon-btn" onclick="openModal('exportModal')" title="Rapport Export (PDF / Excel)">📄</button>
             <button class="icon-btn" onclick="openModal('historyModal')" title="Overzicht Sessies">📊</button>
             <button class="icon-btn" onclick="openModal('settingsModal')" title="Instellingen & Config">☁️</button>
         </div>
     </header>
+
+    <div class="scheduled-banner" id="scheduledBanner">
+        <div class="scheduled-title">📌 Geplande Afspraak Vandaag!</div>
+        <div class="scheduled-details" id="scheduledDetailsText"></div>
+    </div>
 
     <div class="card">
         <div class="card-title">Nieuwe Dialyse Sessie</div>
@@ -164,10 +176,10 @@
         <div class="form-grid">
             <div class="form-group">
                 <label style="display:flex; justify-content:space-between; align-items:center;">
-                    <span>Verpleging (Meerdere selecteerbaar):</span>
+                    <span>Verpleging:</span>
                     <span style="color:var(--neon-cyan); cursor:pointer; font-size:11px;" onclick="openModal('nurseModal')">⚙️ Beheer</span>
                 </label>
-                <select id="nurseSelect" multiple title="Houd Ctrl ingedrukt om meerdere te selecteren"></select>
+                <select id="nurseSelect" multiple title="Meerdere selecteerbaar"></select>
             </div>
             <div class="form-group">
                 <label>Notities / Welzijn:</label>
@@ -178,7 +190,55 @@
         <button class="btn-submit" onclick="saveSession()">SESSIE OPSLAAN & SYNC</button>
     </div>
 
-    <!-- Modals -->
+    <!-- Planning Modal -->
+    <div class="modal" id="planningModal">
+        <div class="modal-content">
+            <h3>Afspraken & Planning</h3>
+            <div class="list-container" id="plannedListContainer"></div>
+            <hr style="margin: 10px 0; border:0; border-top:1px solid var(--border-glass);">
+            <label>Startdatum:</label><input type="date" id="planDate">
+            <label>Tijd:</label><input type="time" id="planTime" value="20:00">
+            <label>Type:</label>
+            <select id="planType">
+                <option value="Nachtdialyse (+0.3)">Nachtdialyse (+0.3)</option>
+                <option value="Dagdialyse (+0.6)">Dagdialyse (+0.6)</option>
+            </select>
+            <label>Herhaling:</label>
+            <select id="planRepeat" onchange="toggleEndDate()">
+                <option value="none">Geen (eenmalig)</option>
+                <option value="mwf">Ma, Wo, Vrij</option>
+                <option value="tts">Di, Do, Za</option>
+                <option value="alternate">Om de dag</option>
+                <option value="daily">Elke dag</option>
+            </select>
+            <div id="endDateContainer" style="display: none;">
+                <label>Tot einddatum:</label><input type="date" id="planEndDate">
+            </div>
+            <label>Notitie:</label><input type="text" id="planNote" placeholder="Optioneel">
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('planningModal')">Sluiten</button>
+                <button class="btn-confirm" onclick="addPlannedAppointment()">Inplannen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal (PDF / Excel) -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <h3>Rapport Export (PDF / Excel)</h3>
+            <label>Startdatum Periode:</label>
+            <input type="date" id="exportStartDate">
+            <label>Einddatum Periode:</label>
+            <input type="date" id="exportEndDate">
+            <div class="modal-buttons" style="flex-direction:column; gap:8px;">
+                <button class="btn-confirm" onclick="generatePDFReport()">📄 Open & Print PDF Rapport</button>
+                <button class="btn-excel" onclick="generateExcelReport()">📊 Exporteer naar Excel (CSV)</button>
+                <button class="btn-cancel" onclick="closeModal('exportModal')">Sluiten</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historie Modal -->
     <div class="modal" id="historyModal">
         <div class="modal-content">
             <h3>Opgeslagen Sessies</h3>
@@ -187,6 +247,7 @@
         </div>
     </div>
 
+    <!-- Verpleging Beheren Modal -->
     <div class="modal" id="nurseModal">
         <div class="modal-content">
             <h3>Verpleging Beheren</h3>
@@ -201,6 +262,7 @@
         </div>
     </div>
 
+    <!-- Instellingen Modal -->
     <div class="modal" id="settingsModal">
         <div class="modal-content">
             <h3>Instellingen & Config</h3>
@@ -222,6 +284,7 @@
 
     <script>
         let sessions = [];
+        let planned = [];
         let nurses = JSON.parse(localStorage.getItem('dialyse_nurses')) || ['Zuster A', 'Broeder B'];
         let dryWeight = parseFloat(localStorage.getItem('dialyse_dry_weight')) || 109.0;
         let apiKey = localStorage.getItem('dialyse_jsonbin_apikey') || '';
@@ -230,11 +293,17 @@
         window.onload = async () => {
             const now = new Date();
             const pad = (n) => String(n).padStart(2, '0');
-            const localIso = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            const todayStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+            const localIso = `${todayStr}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
             
             document.getElementById('appointmentDateTime').value = localIso;
             document.getElementById('connectDateTime').value = localIso;
             document.getElementById('stopDateTime').value = localIso;
+
+            document.getElementById('exportStartDate').value = todayStr;
+            document.getElementById('exportEndDate').value = todayStr;
+            document.getElementById('planDate').value = todayStr;
+            document.getElementById('planEndDate').value = todayStr;
 
             updateFormulaText();
             updateNurseDropdown();
@@ -245,6 +314,7 @@
             } else {
                 document.getElementById('syncStatus').innerText = 'Cloud: Niet ingesteld';
             }
+            checkTodayPlanning();
         };
 
         function openModal(modalId) {
@@ -252,6 +322,7 @@
             if (!target) return;
             
             if (modalId === 'historyModal') renderHistoryList();
+            if (modalId === 'planningModal') renderPlannedList();
             if (modalId === 'nurseModal') renderNurseList();
             if (modalId === 'settingsModal') {
                 document.getElementById('configDryWeight').value = dryWeight;
@@ -264,6 +335,99 @@
         function closeModal(modalId) {
             const target = document.getElementById(modalId);
             if (target) target.style.display = 'none';
+        }
+
+        function toggleEndDate() {
+            const repeat = document.getElementById('planRepeat').value;
+            document.getElementById('endDateContainer').style.display = repeat === 'none' ? 'none' : 'block';
+        }
+
+        function checkTodayPlanning() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todayAppts = planned.filter(p => p.date === todayStr);
+            const banner = document.getElementById('scheduledBanner');
+
+            if (todayAppts.length > 0) {
+                let html = '';
+                todayAppts.forEach(a => {
+                    html += `<div>⏰ <span class="badge-green">${a.time || '20:00'}</span> - 🩸 <b>${a.type}</b> ${a.note ? '('+a.note+')' : ''}</div>`;
+                });
+                document.getElementById('scheduledDetailsText').innerHTML = html;
+                banner.style.display = 'block';
+            } else {
+                banner.style.display = 'none';
+            }
+        }
+
+        function renderPlannedList() {
+            const container = document.getElementById('plannedListContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            if (planned.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 10px;">Geen geplande afspraken.</p>';
+            } else {
+                planned.forEach((p, idx) => {
+                    container.innerHTML += `
+                        <div class="list-card">
+                            <div class="list-card-header">
+                                <span>📅 ${p.date} om <span class="badge-green">${p.time}</span></span>
+                                <button class="delete-btn" onclick="deletePlanned(${idx})">Wis</button>
+                            </div>
+                            <div><b>${p.type}</b> ${p.note ? '| '+p.note : ''}</div>
+                        </div>`;
+                });
+            }
+        }
+
+        async function addPlannedAppointment() {
+            const dateStr = document.getElementById('planDate').value;
+            const time = document.getElementById('planTime').value;
+            const type = document.getElementById('planType').value;
+            const repeat = document.getElementById('planRepeat').value;
+            const endDateStr = document.getElementById('planEndDate').value;
+            const note = document.getElementById('planNote').value.trim();
+
+            if (!dateStr) {
+                alert('Selecteer een startdatum.');
+                return;
+            }
+
+            let currDate = new Date(dateStr + 'T00:00:00');
+            let limitDate = repeat === 'none' ? new Date(dateStr + 'T00:00:00') : new Date((endDateStr || dateStr) + 'T00:00:00');
+
+            let count = 0;
+            while (currDate <= limitDate && count < 500) {
+                let day = currDate.getDay();
+                let add = false;
+                if (repeat === 'none' && count === 0) add = true;
+                else if (repeat === 'daily') add = true;
+                else if (repeat === 'alternate' && count % 2 === 0) add = true;
+                else if (repeat === 'mwf' && (day === 1 || day === 3 || day === 5)) add = true;
+                else if (repeat === 'tts' && (day === 2 || day === 4 || day === 6)) add = true;
+
+                if (add) {
+                    let y = currDate.getFullYear();
+                    let m = String(currDate.getMonth() + 1).padStart(2, '0');
+                    let d = String(currDate.getDate()).padStart(2, '0');
+                    planned.push({ date: `${y}-${m}-${d}`, time, type, repeat, note });
+                }
+                if (repeat === 'none') break;
+                currDate.setDate(currDate.getDate() + 1);
+                count++;
+            }
+
+            await pushToCloud();
+            checkTodayPlanning();
+            renderPlannedList();
+            closeModal('planningModal');
+            alert('Afspraak/afspraken succesvol ingepland!');
+        }
+
+        async function deletePlanned(idx) {
+            planned.splice(idx, 1);
+            await pushToCloud();
+            checkTodayPlanning();
+            renderPlannedList();
         }
 
         function updateNurseDropdown() {
@@ -392,7 +556,7 @@
                             'X-Master-Key': apiKey,
                             'X-Bin-Private': 'true'
                         },
-                        body: JSON.stringify({ sessions: [] })
+                        body: JSON.stringify({ sessions: [], planned: [] })
                     });
                     const createData = await createRes.json();
                     if (createData.metadata && createData.metadata.id) {
@@ -406,11 +570,13 @@
                 });
                 const getData = await getRes.json();
 
-                if (getData.record && getData.record.sessions) {
-                    sessions = getData.record.sessions;
+                if (getData.record) {
+                    if (getData.record.sessions) sessions = getData.record.sessions;
+                    if (getData.record.planned) planned = getData.record.planned;
                     document.getElementById('syncStatus').innerText = 'Cloud: Verbonden';
                     if (showAlert) alert('Verbonden & gesynchroniseerd!');
                 }
+                checkTodayPlanning();
             } catch (error) {
                 console.error(error);
                 document.getElementById('syncStatus').innerText = 'Cloud: Fout bij sync';
@@ -426,7 +592,7 @@
                         'Content-Type': 'application/json',
                         'X-Master-Key': apiKey
                     },
-                    body: JSON.stringify({ sessions: sessions })
+                    body: JSON.stringify({ sessions: sessions, planned: planned })
                 });
                 document.getElementById('syncStatus').innerText = 'Cloud: Opgeslagen';
             } catch (error) {
@@ -464,7 +630,6 @@
                 });
             });
 
-            // Verzamel alle geselecteerde verpleegkundigen
             const nurseSelect = document.getElementById('nurseSelect');
             const selectedNurses = Array.from(nurseSelect.selectedOptions).map(opt => opt.value);
 
@@ -544,6 +709,148 @@
                 await pushToCloud();
                 renderHistoryList();
             }
+        }
+
+        function generatePDFReport() {
+            const start = document.getElementById('exportStartDate').value;
+            const end = document.getElementById('exportEndDate').value;
+
+            if (!start || !end) {
+                alert('Selecteer een start- en einddatum.');
+                return;
+            }
+
+            const filtered = sessions.filter(s => {
+                const sDate = s.connectDateTime ? s.connectDateTime.split('T')[0] : '';
+                return sDate >= start && sDate <= end;
+            });
+
+            if (filtered.length === 0) {
+                alert('Geen sessies gevonden binnen deze periode.');
+                return;
+            }
+
+            let reportHTML = `
+                <html>
+                <head>
+                    <title>Dialyse Rapport ${start} t/m ${end}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 25px; color: #2d3748; line-height: 1.4; }
+                        h2 { color: #1a202c; border-bottom: 2px solid #00f2fe; padding-bottom: 8px; margin-bottom: 5px; }
+                        .period { font-size: 13px; color: #718096; margin-bottom: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+                        th, td { border: 1px solid #cbd5e0; padding: 8px; text-align: left; vertical-align: top; }
+                        th { background: #edf2f7; color: #2d3748; font-weight: bold; }
+                        .badge-green { color: #22543d; font-weight: bold; }
+                        .badge-orange { color: #dd6b20; font-weight: bold; }
+                        .badge-red { color: #e53e3e; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <h2>🩸 Dialyse & Vocht Monitor Rapport</h2>
+                    <div class="period"><b>Periode:</b> ${start} t/m ${end} | <b>Vast Drooggewicht:</b> ${dryWeight} kg</div>
+                    <table>
+                        <tr>
+                            <th>Datum & Type</th>
+                            <th>Gewichten (kg)</th>
+                            <th>UF (Advies / Ing / Werk)</th>
+                            <th>Medicatie</th>
+                            <th>Flow & Verpleging</th>
+                            <th>Metingen (RR & HR)</th>
+                        </tr>
+            `;
+
+            filtered.forEach(s => {
+                let meds = [];
+                if (s.fragmin2500) meds.push('Fragmin 2500');
+                if (s.fragmin5000) meds.push('Fragmin 5000');
+                if (s.epo) meds.push('Epo');
+                if (s.ijzer) meds.push('Ijzer');
+
+                let nursesStr = s.nurses && s.nurses.length > 0 ? s.nurses.join(', ') : (s.nurse || '-');
+
+                let measStr = '';
+                if (s.measurements && s.measurements.length > 0) {
+                    measStr = s.measurements.map(m => `${m.time || '-'}: ${m.sys}/${m.dia} (${m.hr}bpm)`).join('<br>');
+                } else {
+                    measStr = '-';
+                }
+
+                let badge = 'badge-green';
+                if (s.ufAdvice >= 4.5) badge = 'badge-red';
+                else if (s.ufAdvice >= 4.0) badge = 'badge-orange';
+
+                reportHTML += `
+                    <tr>
+                        <td><b>Aansluit:</b> ${s.connectDateTime ? s.connectDateTime.replace('T', ' ') : '-'}<br><small>${s.dialysisTypeName || 'Nachtdialyse'}</small></td>
+                        <td>Pre: ${s.preWeight}<br>Post: ${s.postWeight}<br>Droog: ${s.dryWeight || dryWeight}</td>
+                        <td>Advies: <span class="${badge}">${s.ufAdvice} kg</span><br>Ing: ${s.setUf} kg<br>Werk: ${s.actualUf} kg</td>
+                        <td>${meds.join(', ') || 'Geen'}</td>
+                        <td>Flow: ${s.shuntFlow || '-'} ml/min<br>Verpl: ${nursesStr}</td>
+                        <td>${measStr}</td>
+                    </tr>
+                `;
+            });
+
+            reportHTML += `
+                    </table>
+                    <script>
+                        window.onload = function() { window.print(); }
+                    <\/script>
+                </body>
+                </html>
+            `;
+
+            const win = window.open('', '_blank');
+            win.document.write(reportHTML);
+            win.document.close();
+            closeModal('exportModal');
+        }
+
+        function generateExcelReport() {
+            const start = document.getElementById('exportStartDate').value;
+            const end = document.getElementById('exportEndDate').value;
+
+            if (!start || !end) {
+                alert('Selecteer een start- en einddatum.');
+                return;
+            }
+
+            const filtered = sessions.filter(s => {
+                const sDate = s.connectDateTime ? s.connectDateTime.split('T')[0] : '';
+                return sDate >= start && sDate <= end;
+            });
+
+            if (filtered.length === 0) {
+                alert('Geen sessies gevonden binnen deze periode.');
+                return;
+            }
+
+            let csv = 'Afspraak Datum;Aansluit Datum;Stop Datum;Type;Pre Gewicht;Post Gewicht;Drooggewicht;UF Advies;UF Ingesteld;UF Werkelijk;Fragmin 2500;Fragmin 5000;Epo;Ijzer;Shuntflow;Verpleging;Metingen;Notities\n';
+
+            filtered.forEach(s => {
+                let meds = [];
+                if (s.fragmin2500) meds.push('Fragmin 2500');
+                if (s.fragmin5000) meds.push('Fragmin 5000');
+                if (s.epo) meds.push('Epo');
+                if (s.ijzer) meds.push('Ijzer');
+
+                let nursesStr = s.nurses && s.nurses.length > 0 ? s.nurses.join(' & ') : (s.nurse || '-');
+
+                let measStr = '';
+                if (s.measurements && s.measurements.length > 0) {
+                    measStr = s.measurements.map(m => `${m.time}: ${m.sys}/${m.dia} HR:${m.hr}`).join(' | ');
+                }
+
+                csv += `"${s.appointmentDateTime || ''}";"${s.connectDateTime || ''}";"${s.stopDateTime || ''}";"${s.dialysisTypeName || ''}";"${s.preWeight || ''}";"${s.postWeight || ''}";"${s.dryWeight || dryWeight}";"${s.ufAdvice || ''}";"${s.setUf || ''}";"${s.actualUf || ''}";"${s.fragmin2500 ? 'Ja' : 'Nee'}";"${s.fragmin5000 ? 'Ja' : 'Nee'}";"${s.epo ? 'Ja' : 'Nee'}";"${s.ijzer ? 'Ja' : 'Nee'}";"${s.shuntFlow || ''}";"${nursesStr}";"${measStr}";"${s.notes || ''}"\n`;
+            });
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Dialyse_Rapport_${start}_tot_${end}.csv`;
+            link.click();
+            closeModal('exportModal');
         }
 
         function saveSettings() {
