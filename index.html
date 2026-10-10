@@ -28,15 +28,11 @@
         .icon-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--border-glass); color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .icon-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
 
-        /* Automatische PDF-banner */
-        .auto-pdf-banner { background: rgba(0, 242, 254, 0.1); border: 2px solid var(--neon-cyan); border-radius: 12px; padding: 14px; width: 100%; max-width: 500px; margin-bottom: 15px; display: none; text-align: center; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0,242,254, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(0,242,254, 0); } 100% { box-shadow: 0 0 0 0 rgba(0,242,254, 0); } }
+        .auto-pdf-banner { background: rgba(0, 242, 254, 0.1); border: 2px solid var(--neon-cyan); border-radius: 12px; padding: 14px; width: 100%; max-width: 500px; margin-bottom: 15px; display: none; text-align: center; }
         .auto-pdf-title { font-size: 12px; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase; margin-bottom: 6px; }
         .btn-auto-pdf { background: var(--neon-cyan); color: #030508; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; width: 100%; margin-top: 6px; }
 
         .card { background: var(--surface-card); border: 1px solid var(--border-glass); border-radius: 16px; padding: 18px; width: 100%; max-width: 500px; margin-bottom: 15px; backdrop-filter: blur(10px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
-        .card-title { font-size: 13px; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-
         .top-action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px; }
         .btn-pdf { background: rgba(0,242,254,0.1); border: 1px solid var(--border-glass); color: var(--neon-cyan); padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; }
 
@@ -44,7 +40,7 @@
         label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
         input, select { background: #0f172a; border: 1px solid var(--border-glass); border-radius: 8px; padding: 10px; color: white; font-size: 14px; font-weight: 600; outline: none; width: 100%; }
 
-        .btn-submit { width: 100%; padding: 12px; background: var(--neon-cyan); color: #030508; border: none; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; margin-top: 8px; box-shadow: 0 0 12px rgba(0,242,254,0.25); }
+        .btn-submit { width: 100%; padding: 12px; background: var(--neon-cyan); color: #030508; border: none; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; margin-top: 8px; }
 
         .result-box { background: #0f172a; border: 1px solid var(--border-glass); border-radius: 10px; padding: 12px; margin-top: 10px; }
         .result-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
@@ -160,7 +156,7 @@
         let apiKey = localStorage.getItem('dialysis_jsonbin_apikey') || '';
         let binId = localStorage.getItem('dialysis_jsonbin_binid') || '';
 
-        window.onload = async () => {
+        window.onload = async function() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('dialysisDate').value = today;
             document.getElementById('pdfStartDate').value = today;
@@ -268,34 +264,10 @@
                 return;
             }
 
-            let reportHTML = `
-                <html>
-                <head>
-                    <title>Vocht & Dialyse Rapport (${start} t/m ${end})</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; padding: 25px; color: #1e293b; background: #ffffff; }
-                        h2 { color: #0f172a; border-bottom: 2px solid #00f2fe; padding-bottom: 8px; font-size: 20px; }
-                        .period { font-size: 12px; color: #64748b; margin-bottom: 20px; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-                        th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
-                        th { background: #f1f5f9; color: #475569; text-transform: uppercase; font-size: 10px; }
-                    </style>
-                </head>
-                <body>
-                    <h2>💧 Vocht & Dialyse Rapport</h2>
-                    <div class="period"><b>Periode:</b> ${start} t/m ${end}</div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Datum</th>
-                                <th>Pre-Gewicht</th>
-                                <th>Droog Gewicht</th>
-                                <th>UF-Advies</th>
-                                <th>Bloeddruk & Pols</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
+            let reportHTML = '<html><head><title>Vocht & Dialyse Rapport</title><style>body { font-family: Arial, sans-serif; padding: 25px; color: #1e293b; } h2 { color: #0f172a; border-bottom: 2px solid #00f2fe; padding-bottom: 8px; font-size: 20px; } table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; } th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; } th { background: #f1f5f9; color: #475569; }</style></head><body>';
+            reportHTML += '<h2>💧 Vocht & Dialyse Rapport</h2>';
+            reportHTML += '<div style="font-size:12px; color:#64748b; margin-bottom:20px;">Periode: ' + start + ' t/m ' + end + '</div>';
+            reportHTML += '<table><thead><tr><th>Datum</th><th>Pre-Gewicht</th><th>Droog Gewicht</th><th>UF-Advies</th><th>Bloeddruk & Pols</th></tr></thead><tbody>';
 
             let currDate = new Date(start + 'T00:00:00');
             let endDateObj = new Date(end + 'T00:00:00');
@@ -304,30 +276,16 @@
                 let y = currDate.getFullYear();
                 let m = String(currDate.getMonth() + 1).padStart(2, '0');
                 let d = String(currDate.getDate()).padStart(2, '0');
-                let dateStr = `${y}-${m}-${d}`;
+                let dateStr = y + '-' + m + '-' + d;
 
                 let data = dialysisLogs[dateStr];
                 if (data) {
-                    reportHTML += `
-                        <tr>
-                            <td><b>${dateStr}</b></td>
-                            <td>${data.preWeight || '-'} kg</td>
-                            <td>${data.dryWeight || '-'} kg</td>
-                            <td><b>${data.ufAdvice || '-'} kg</b></td>
-                            <td>${data.bloodPressure || '-'} mmHg (${data.heartRate || '-'} bpm)</td>
-                        </tr>
-                    `;
+                    reportHTML += '<tr><td><b>' + dateStr + '</b></td><td>' + (data.preWeight || '-') + ' kg</td><td>' + (data.dryWeight || '-') + ' kg</td><td><b>' + (data.ufAdvice || '-') + ' kg</b></td><td>' + (data.bloodPressure || '-') + ' (' + (data.heartRate || '-') + ' bpm)</td></tr>';
                 }
                 currDate.setDate(currDate.getDate() + 1);
             }
 
-            reportHTML += `
-                        </tbody>
-                    </table>
-                    <script>window.onload = function() { window.print(); }</script>
-                </body>
-                </html>
-            `;
+            reportHTML += '</tbody></table><script>window.onload = function() { window.print(); };<\/script></body></html>';
 
             const win = window.open('', '_blank');
             win.document.write(reportHTML);
@@ -368,7 +326,7 @@
                     }
                 }
 
-                const getRes = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+                const getRes = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', {
                     headers: { 'X-Master-Key': apiKey }
                 });
                 const getData = await getRes.json();
@@ -390,7 +348,7 @@
         async function pushToCloud() {
             if (!apiKey || !binId) return;
             try {
-                await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+                await fetch('https://api.jsonbin.io/v3/b/' + binId, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
