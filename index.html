@@ -2,300 +2,213 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#000000">
-
-    <title>LCARS - VOCHT & DIALYSE MONITOR</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocht & Dialyse Monitor</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&display=swap');
-
         :root {
-            --lcars-orange: #ff9900;
-            --lcars-tangerine: #ff6600;
-            --lcars-tan: #ffcc99;
-            --lcars-purple: #cc99cc;
-            --lcars-blue: #99ccff;
-            --lcars-red: #cc3333;
-            --lcars-amber: #ffcc00;
-            --lcars-gray: #112233;
-            --lcars-bg: #000000;
+            --bg-base: #030508;
+            --surface-glass: rgba(13, 17, 28, 0.85);
+            --surface-card: rgba(18, 24, 38, 0.75);
+            --border-glass: rgba(0, 242, 254, 0.2);
+            --neon-cyan: #00f2fe;
+            --neon-blue: #4facfe;
+            --neon-green: #10b981;
+            --neon-orange: #f59e0b;
+            --neon-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Antonio', -apple-system, sans-serif; user-select: none; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background: var(--bg-base); color: var(--text-main); min-height: 100vh; padding: 15px; background-image: radial-gradient(circle at 50% 10%, #0c1425 0%, var(--bg-base) 100%); display: flex; flex-direction: column; align-items: center; }
 
-        body {
-            background-color: var(--lcars-bg);
-            color: var(--lcars-orange);
-            width: 100vw; height: 100vh;
-            overflow: hidden;
-            display: flex; flex-direction: column;
-            padding: 8px;
-        }
+        header { background: var(--surface-glass); border: 1px solid var(--border-glass); border-radius: 14px; padding: 12px 18px; width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; backdrop-filter: blur(10px); }
+        .app-title { font-size: 15px; font-weight: 800; color: var(--neon-cyan); letter-spacing: 1px; }
+        .header-btns { display: flex; gap: 6px; align-items: center; }
+        .icon-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--border-glass); color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .icon-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
 
-        /* Top LCARS Header Frame */
-        .lcars-top-frame {
-            display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;
-        }
+        .auto-pdf-banner { background: rgba(0, 242, 254, 0.1); border: 2px solid var(--neon-cyan); border-radius: 12px; padding: 14px; width: 100%; max-width: 500px; margin-bottom: 15px; display: none; text-align: center; }
+        .auto-pdf-title { font-size: 12px; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase; margin-bottom: 6px; }
+        .btn-auto-pdf { background: var(--neon-cyan); color: #030508; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; width: 100%; margin-top: 6px; }
 
-        .lcars-top-row { display: flex; align-items: center; gap: 6px; }
+        .scheduled-banner { background: rgba(245, 158, 11, 0.12); border: 2px solid var(--neon-orange); border-radius: 12px; padding: 14px; width: 100%; max-width: 500px; margin-bottom: 15px; display: none; cursor: pointer; }
+        .scheduled-title { font-size: 11px; font-weight: 800; color: var(--neon-orange); text-transform: uppercase; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .scheduled-details { font-size: 13px; color: var(--text-main); font-weight: 600; }
+        .click-hint { font-size: 10px; color: var(--neon-cyan); font-weight: 700; margin-top: 6px; text-transform: uppercase; }
 
-        /* LCARS Terug Knop Elbow */
-        .lcars-elbow-top {
-            background: var(--lcars-orange);
-            height: 42px; width: 110px;
-            border-top-left-radius: 22px;
-            display: flex; align-items: flex-end; padding: 4px 8px;
-            color: #000; font-weight: bold; font-size: 14px; letter-spacing: 1px;
-            cursor: pointer; transition: background 0.1s;
-        }
-        .lcars-elbow-top:active { background: #ffffff; color: #000; }
+        .card { background: var(--surface-card); border: 1px solid var(--border-glass); border-radius: 16px; padding: 20px; width: 100%; max-width: 500px; margin-bottom: 15px; backdrop-filter: blur(10px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
+        .card-title { font-size: 12px; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
 
-        .lcars-top-bar {
-            flex: 1; height: 20px;
-            background: var(--lcars-blue);
-            border-radius: 0 10px 10px 0;
-            display: flex; align-items: center; justify-content: flex-end;
-            padding-right: 10px; color: #000; font-weight: bold; font-size: 11px;
-        }
-
-        .lcars-header-title {
-            font-size: 17px; font-weight: bold; color: #ffffff;
-            letter-spacing: 1.5px; padding-left: 6px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-
-        /* Automatische PDF-banner */
-        .auto-pdf-banner {
-            background: rgba(255, 153, 0, 0.15); border: 2px solid var(--lcars-orange);
-            border-radius: 10px; padding: 10px; margin-bottom: 8px; text-align: center; display: none;
-        }
-        .auto-pdf-title { font-size: 11px; font-weight: bold; color: var(--lcars-orange); text-transform: uppercase; margin-bottom: 4px; }
-        .btn-auto-pdf { background: var(--lcars-orange); color: #000; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; width: 100%; margin-top: 4px; }
-
-        /* Geplande Afspraak Banner */
-        .scheduled-banner {
-            background: rgba(255, 204, 0, 0.15); border: 2px solid var(--lcars-amber);
-            border-radius: 10px; padding: 10px; margin-bottom: 8px; display: none; cursor: pointer;
-        }
-        .scheduled-title { font-size: 11px; font-weight: bold; color: var(--lcars-amber); text-transform: uppercase; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
-        .scheduled-details { font-size: 12px; color: #fff; }
-        .click-hint { font-size: 9px; color: var(--lcars-blue); font-weight: bold; margin-top: 4px; text-transform: uppercase; }
-
-        /* Header Icon Knopjes (Navigatie) */
-        .header-btns { display: flex; gap: 5px; margin-bottom: 8px; }
-        .icon-btn {
-            flex: 1; background: var(--lcars-purple); color: #000; border: none;
-            padding: 7px; font-weight: bold; font-size: 11px; text-transform: uppercase;
-            border-radius: 10px; cursor: pointer; text-align: center;
-        }
-        .icon-btn:active { background: #fff; }
-        .icon-btn.tan { background: var(--lcars-tan); }
-        .icon-btn.blue { background: var(--lcars-blue); }
-        .icon-btn.red { background: var(--lcars-red); color: #fff; }
-
-        /* Main Scrollable Area */
-        .lcars-mobile-container {
-            flex: 1; display: flex; flex-direction: column;
-            gap: 10px; overflow-y: auto; padding-right: 2px; padding-bottom: 30px;
-        }
-
-        .card {
-            background: rgba(15, 20, 30, 0.9); border: 2px solid var(--lcars-orange);
-            border-radius: 12px; padding: 12px; position: relative;
-        }
-        .card::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%;
-            background: var(--lcars-orange); border-radius: 8px 0 0 8px;
-        }
-        .card-title { font-size: 11px; font-weight: bold; color: var(--lcars-tan); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; padding-left: 6px; display: flex; justify-content: space-between; align-items: center; }
-
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; padding-left: 6px; }
-        .form-group { display: flex; flex-direction: column; margin-bottom: 8px; padding-left: 6px; }
-        label { font-size: 10px; font-weight: bold; color: var(--lcars-tan); margin-bottom: 2px; text-transform: uppercase; }
-        input, select, textarea { background: #000; border: 1px solid var(--lcars-orange); border-radius: 6px; padding: 7px; color: white; font-size: 13px; font-weight: bold; outline: none; width: 100%; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 12px; }
+        label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
+        input, select, textarea { background: #0f172a; border: 1px solid var(--border-glass); border-radius: 8px; padding: 10px; color: white; font-size: 14px; font-weight: 600; outline: none; width: 100%; }
         
-        select[multiple] { height: 75px; padding: 4px; }
-        select[multiple] option { padding: 3px; border-radius: 3px; margin-bottom: 2px; }
-        select[multiple] option:checked { background: var(--lcars-orange); color: #000; font-weight: bold; }
+        select[multiple] { height: 90px; padding: 6px; }
+        select[multiple] option { padding: 4px; border-radius: 4px; margin-bottom: 2px; }
+        select[multiple] option:checked { background: var(--neon-cyan); color: #030508; font-weight: bold; }
 
-        .uf-box { background: rgba(0,0,0,0.8); border: 1px solid var(--lcars-blue); border-radius: 8px; padding: 10px; margin: 6px 0 8px 6px; text-align: center; }
-        .uf-value { font-size: 22px; font-weight: bold; margin-top: 2px; }
+        .uf-box { background: rgba(0,242,254,0.04); border: 1px solid var(--border-glass); border-radius: 12px; padding: 14px; margin-top: 10px; margin-bottom: 12px; text-align: center; }
+        .uf-value { font-size: 26px; font-weight: 900; margin-top: 4px; }
         
-        .badge-green { color: #10b981; }
-        .badge-orange { color: var(--lcars-amber); }
-        .badge-red { color: var(--lcars-red); }
+        .badge-green { color: var(--neon-green); }
+        .badge-orange { color: var(--neon-orange); }
+        .badge-red { color: var(--neon-red); }
 
-        .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: #000; border: 1px solid var(--lcars-orange); border-radius: 6px; padding: 8px; margin-bottom: 8px; margin-left: 6px; }
-        .checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: bold; color: #fff; cursor: pointer; }
-        .checkbox-label input { width: 14px; height: 14px; accent-color: var(--lcars-orange); }
+        .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #0f172a; border: 1px solid var(--border-glass); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+        .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-main); cursor: pointer; }
+        .checkbox-label input { width: 18px; height: 18px; accent-color: var(--neon-cyan); }
 
-        .measurement-row { display: flex; gap: 5px; align-items: center; margin-bottom: 6px; background: #000; border: 1px solid var(--lcars-gray); padding: 6px; border-radius: 6px; margin-left: 6px; }
-        .measurement-row input { padding: 5px; font-size: 12px; text-align: center; }
-        .btn-small-del { background: var(--lcars-red); color: white; border: none; padding: 5px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 10px; }
-        .btn-small-add { background: var(--lcars-blue); color: #000; border: none; padding: 7px; border-radius: 6px; font-weight: bold; font-size: 11px; width: calc(100% - 6px); cursor: pointer; margin-bottom: 8px; margin-left: 6px; text-transform: uppercase; }
+        .measurement-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; background: #0f172a; border: 1px solid var(--border-glass); padding: 8px; border-radius: 8px; }
+        .measurement-row input { padding: 6px; font-size: 13px; text-align: center; }
+        .btn-small-del { background: var(--neon-red); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-small-add { background: var(--neon-cyan); color: #030508; border: none; padding: 8px; border-radius: 8px; font-weight: 800; font-size: 12px; width: 100%; cursor: pointer; margin-bottom: 12px; }
 
-        .btn-submit { width: calc(100% - 6px); padding: 10px; background: var(--lcars-blue); color: #000; border: none; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; margin-top: 6px; margin-left: 6px; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-submit:active { background: #fff; }
+        .btn-submit { width: 100%; padding: 14px; background: var(--neon-cyan); color: #030508; border: none; border-radius: 10px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; }
 
-        /* Modals */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; z-index: 100; padding: 12px; }
-        .modal-content { background: #000; border: 2px solid var(--lcars-orange); border-radius: 16px; padding: 18px; width: 100%; max-width: 380px; text-align: center; max-height: 85vh; overflow-y: auto; }
-        .modal-content h3 { color: var(--lcars-orange); margin-bottom: 10px; font-size: 15px; text-transform: uppercase; }
-        .modal-content label { text-align: left; display: block; margin-top: 8px; color: var(--lcars-tan); font-size: 10px; font-weight: bold; text-transform: uppercase; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: #0f172a; border: 1px solid var(--border-glass); padding: 22px; border-radius: 16px; width: 90%; max-width: 440px; text-align: center; max-height: 85vh; overflow-y: auto; }
+        .modal-content h3 { color: var(--neon-cyan); margin-bottom: 14px; font-size: 17px; }
+        .modal-content label { text-align: left; display: block; margin-top: 10px; }
         
-        .list-container { max-height: 200px; overflow-y: auto; text-align: left; margin-bottom: 10px; border: 1px solid var(--lcars-gray); padding: 6px; border-radius: 8px; background: #070a12; }
-        .list-card { background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 8px; margin-bottom: 6px; font-size: 11px; color: #fff; }
-        .list-card-header { font-weight: bold; color: var(--lcars-orange); margin-bottom: 3px; display: flex; justify-content: space-between; align-items: center; }
+        .list-container { max-height: 250px; overflow-y: auto; text-align: left; margin-bottom: 14px; border: 1px solid var(--border-glass); padding: 8px; border-radius: 10px; background: #070a12; }
+        .list-card { background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px; margin-bottom: 8px; font-size: 12px; }
+        .list-card-header { font-weight: 700; color: var(--neon-cyan); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
         
         .btn-action-group { display: flex; gap: 4px; }
-        .edit-btn { background: var(--lcars-blue); color: #000; border: none; padding: 3px 6px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; }
-        .delete-btn { background: var(--lcars-red); color: white; border: none; padding: 3px 6px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; }
+        .edit-btn { background: var(--neon-blue); color: #030508; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 800; }
+        .delete-btn { background: var(--neon-red); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 700; }
 
-        .modal-buttons { display: flex; gap: 8px; margin-top: 12px; }
-        .modal-buttons button { flex: 1; padding: 9px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; text-transform: uppercase; }
-        .btn-cancel { background: var(--lcars-gray); color: #fff; }
-        .btn-confirm { background: var(--lcars-orange); color: #000; }
-        .btn-excel { background: var(--lcars-blue); color: #000; }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
+        .modal-buttons button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; }
+        .btn-cancel { background: #1e293b; color: var(--text-muted); }
+        .btn-confirm { background: var(--neon-cyan); color: #030508; }
+        .btn-excel { background: #10b981; color: white; }
 
-        .sync-status { font-size: 10px; color: var(--lcars-tan); }
-        .editing-indicator { background: rgba(255,153,0,0.15); border: 1px solid var(--lcars-orange); color: var(--lcars-orange); padding: 6px; border-radius: 6px; font-size: 11px; font-weight: bold; margin-bottom: 8px; display: none; text-align: center; text-transform: uppercase; }
+        .sync-status { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+        .editing-indicator { background: rgba(245,158,11,0.2); border: 1px solid var(--neon-orange); color: var(--neon-orange); padding: 6px; border-radius: 6px; font-size: 11px; font-weight: bold; margin-bottom: 10px; display: none; text-align: center; }
     </style>
 </head>
 <body>
 
-    <!-- Top LCARS Frame -->
-    <div class="lcars-top-frame">
-        <div class="lcars-top-row">
-            <!-- Terug-knop ingebouwd in de LCARS elbow -->
-            <div class="lcars-elbow-top" onclick="goBack()">◀ TERUG</div>
-            <div class="lcars-top-bar" id="syncStatus">CLOUD: ONLINE</div>
+    <header>
+        <div>
+            <div class="app-title">🩸 VOCHT & DIALYSE MONITOR</div>
+            <div class="sync-status" id="syncStatus">Cloud: Niet ingesteld</div>
         </div>
-        <div class="lcars-header-title">
-            <span>🩸 VOCHT & DIALYSE</span>
-            <span style="font-size:11px; color:var(--lcars-tan);" id="todayDateStr">Vandaag</span>
+        <div class="header-btns">
+            <button class="icon-btn" onclick="openModal('planningModal')" title="Afspraken & Planning">📅</button>
+            <button class="icon-btn" onclick="openModal('exportModal')" title="Rapport Export (PDF / Excel)">📄</button>
+            <button class="icon-btn" onclick="openModal('historyModal')" title="Overzicht Sessies">📊</button>
+            <button class="icon-btn" onclick="openModal('settingsModal')" title="Instellingen & Config">☁️</button>
         </div>
-    </div>
+    </header>
 
-    <!-- Automatische PDF-banner -->
     <div class="auto-pdf-banner" id="autoPdfBanner">
-        <div class="auto-pdf-title">⏰ TIJD BEREIKT! RAPPORT NOG NIET GEMAAKT</div>
-        <div style="font-size: 11px; color: #fff;">Genereer en download het rapport om de melding te voltooien.</div>
-        <button class="btn-auto-pdf" onclick="playBeep(); generateAutoPDF()">📄 GENEREER DAG-PDF</button>
+        <div class="auto-pdf-title">⏰ Tijd bereikt! Dagelijkse Dialyse-PDF nog niet gemaakt</div>
+        <div style="font-size: 12px; color: var(--text-main);">Genereer en download het rapport om de melding te voltooien.</div>
+        <button class="btn-auto-pdf" onclick="generateAutoPDF()">📄 GENEREER DAG-PDF NU</button>
     </div>
 
-    <!-- Geplande Afspraak Banner -->
-    <div class="scheduled-banner" id="scheduledBanner" onclick="playBeep(); loadScheduledIntoForm()">
+    <div class="scheduled-banner" id="scheduledBanner" onclick="loadScheduledIntoForm()">
         <div class="scheduled-title">
-            <span>📌 GEPLANDE AFSPRAAK VANDAAG</span>
-            <span>👉 TIK OM IN TE VULLEN</span>
+            <span>📌 Geplande Afspraak Vandaag!</span>
+            <span>👉 Tik hier om in te vullen</span>
         </div>
         <div class="scheduled-details" id="scheduledDetailsText"></div>
         <div class="click-hint">⚡ Tik hier om deze afspraak over te nemen in het formulier</div>
     </div>
 
-    <!-- Header Icon Knopjes (Navigatie) -->
-    <div class="header-btns">
-        <button class="icon-btn tan" onclick="playBeep(); openModal('planningModal')" title="Planning">📅</button>
-        <button class="icon-btn blue" onclick="playBeep(); openModal('exportModal')" title="Rapport">📄</button>
-        <button class="icon-btn" onclick="playBeep(); openModal('historyModal')" title="Overzicht">📊</button>
-        <button class="icon-btn red" onclick="playBeep(); openModal('settingsModal')" title="Cloud">☁️</button>
-    </div>
-
-    <div class="lcars-mobile-container">
-        <div class="card">
-            <div class="card-title">
-                <span id="formCardTitle">Nieuwe Dialyse Sessie</span>
-                <span id="cancelEditBtn" style="color:var(--lcars-tan); font-size:10px; cursor:pointer; display:none;" onclick="playBeep(); cancelEditMode()">Annuleer bewerken</span>
-            </div>
-            
-            <div class="editing-indicator" id="editingIndicator">Bewerkt bestaande sessie. Wijzigingen worden bijgewerkt!</div>
-
-            <div class="form-group">
-                <label>Afspraak Datum / Tijd:</label>
-                <input type="datetime-local" id="appointmentDateTime">
-            </div>
-            <div class="form-group">
-                <label>Aansluit Datum / Tijd:</label>
-                <input type="datetime-local" id="connectDateTime">
-            </div>
-            <div class="form-group">
-                <label>Stop Datum / Tijd:</label>
-                <input type="datetime-local" id="stopDateTime">
-            </div>
-
-            <div class="form-group">
-                <label>Type Dialyse (Spoelvocht opslag):</label>
-                <select id="dialysisType" onchange="calculateUF()">
-                    <option value="0.3" selected>Nachtdialyse (+0.3 kg)</option>
-                    <option value="0.6">Dagdialyse (+0.6 kg)</option>
-                </select>
-            </div>
-
-            <div class="form-grid" style="margin-top: 4px;">
-                <div class="form-group" style="padding-left:0;">
-                    <label>Pre-gewicht (kg):</label>
-                    <input type="number" step="0.1" id="preWeight" placeholder="bijv. 112.5" oninput="calculateUF()">
-                </div>
-                <div class="form-group" style="padding-left:0;">
-                    <label>Post-gewicht (kg):</label>
-                    <input type="number" step="0.1" id="postWeight" placeholder="bijv. 109.1" oninput="calculateUF()">
-                </div>
-            </div>
-
-            <div class="uf-box">
-                <label style="color:var(--lcars-blue);">Berekend UF Advies (Vochtonttrekking):</label>
-                <div class="uf-value badge-green" id="ufDisplay">0.0 kg</div>
-                <div style="font-size:9px; color:var(--lcars-tan); margin-top:2px;" id="ufFormulaText">Formule: Pre - Droog + Opslag</div>
-            </div>
-
-            <div class="form-grid">
-                <div class="form-group" style="padding-left:0;">
-                    <label>Ingestelde UF (kg):</label>
-                    <input type="number" step="0.1" id="setUf" placeholder="bijv. 3.8">
-                </div>
-                <div class="form-group" style="padding-left:0;">
-                    <label>Werkelijke UF (Pre - Post):</label>
-                    <input type="number" step="0.1" id="actualUf" placeholder="0.0" readonly style="opacity:0.8; font-weight:bold;">
-                </div>
-            </div>
-
-            <label style="padding-left:6px;">Medicatie & Toevoegingen:</label>
-            <div class="checkbox-grid">
-                <label class="checkbox-label"><input type="checkbox" id="fragmin2500"> Fragmin 2500</label>
-                <label class="checkbox-label"><input type="checkbox" id="fragmin5000"> Fragmin 5000</label>
-                <label class="checkbox-label"><input type="checkbox" id="epo"> Epo</label>
-                <label class="checkbox-label"><input type="checkbox" id="ijzer"> Ijzer</label>
-            </div>
-
-            <div class="form-group">
-                <label>Shuntflow (ml/min):</label>
-                <input type="number" id="shuntFlow" placeholder="bijv. 1200">
-            </div>
-
-            <label style="padding-left:6px;">Bloeddruk & Hartslag Metingen:</label>
-            <div id="measurementsContainer"></div>
-            <button type="button" class="btn-small-add" onclick="playBeep(); addMeasurementRow()">+ Meting toevoegen</button>
-
-            <div class="form-grid">
-                <div class="form-group" style="padding-left:0;">
-                    <label style="display:flex; justify-content:space-between; align-items:center;">
-                        <span>Verpleging:</span>
-                        <span style="color:var(--lcars-blue); cursor:pointer; font-size:10px;" onclick="playBeep(); openModal('nurseModal')">⚙️ BEHEER</span>
-                    </label>
-                    <select id="nurseSelect" multiple title="Meerdere selecteerbaar"></select>
-                </div>
-                <div class="form-group" style="padding-left:0;">
-                    <label>Notities / Welzijn:</label>
-                    <input type="text" id="notes" placeholder="Bijv. moe, kramp...">
-                </div>
-            </div>
-
-            <button class="btn-submit" id="saveButton" onclick="playBeep(); saveSession()">SESSIE OPSLAAN & SYNC</button>
+    <div class="card">
+        <div class="card-title">
+            <span id="formCardTitle">Nieuwe Dialyse Sessie</span>
+            <span id="cancelEditBtn" style="color:var(--neon-orange); font-size:10px; cursor:pointer; display:none;" onclick="cancelEditMode()">Annuleer bewerken</span>
         </div>
+        
+        <div class="editing-indicator" id="editingIndicator">Bewerkt bestaande sessie. Wijzigingen worden bij opslaan bijgewerkt!</div>
+
+        <div class="form-group">
+            <label>Afspraak Datum / Tijd:</label>
+            <input type="datetime-local" id="appointmentDateTime">
+        </div>
+        <div class="form-group">
+            <label>Aansluit Datum / Tijd:</label>
+            <input type="datetime-local" id="connectDateTime">
+        </div>
+        <div class="form-group">
+            <label>Stop Datum / Tijd:</label>
+            <input type="datetime-local" id="stopDateTime">
+        </div>
+
+        <div class="form-group">
+            <label>Type Dialyse (Spoelvocht opslag):</label>
+            <select id="dialysisType" onchange="calculateUF()">
+                <option value="0.3" selected>Nachtdialyse (+0.3 kg)</option>
+                <option value="0.6">Dagdialyse (+0.6 kg)</option>
+            </select>
+        </div>
+
+        <div class="form-grid" style="margin-top: 6px;">
+            <div class="form-group">
+                <label>Pre-gewicht (kg):</label>
+                <input type="number" step="0.1" id="preWeight" placeholder="bijv. 112.5" oninput="calculateUF()">
+            </div>
+            <div class="form-group">
+                <label>Post-gewicht (kg):</label>
+                <input type="number" step="0.1" id="postWeight" placeholder="bijv. 109.1" oninput="calculateUF()">
+            </div>
+        </div>
+
+        <div class="uf-box">
+            <label>Berekend UF Advies (Vochtonttrekking):</label>
+            <div class="uf-value badge-green" id="ufDisplay">0.0 kg</div>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:2px;" id="ufFormulaText">Formule: Pre - Droog + Opslag</div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Ingestelde UF (kg):</label>
+                <input type="number" step="0.1" id="setUf" placeholder="bijv. 3.8">
+            </div>
+            <div class="form-group">
+                <label>Werkelijke UF (Pre - Post):</label>
+                <input type="number" step="0.1" id="actualUf" placeholder="0.0" readonly style="opacity:0.8; font-weight:700;">
+            </div>
+        </div>
+
+        <label>Medicatie & Toevoegingen:</label>
+        <div class="checkbox-grid">
+            <label class="checkbox-label"><input type="checkbox" id="fragmin2500"> Fragmin 2500</label>
+            <label class="checkbox-label"><input type="checkbox" id="fragmin5000"> Fragmin 5000</label>
+            <label class="checkbox-label"><input type="checkbox" id="epo"> Epo</label>
+            <label class="checkbox-label"><input type="checkbox" id="ijzer"> Ijzer</label>
+        </div>
+
+        <div class="form-group">
+            <label>Shuntflow (ml/min):</label>
+            <input type="number" id="shuntFlow" placeholder="bijv. 1200">
+        </div>
+
+        <label>Bloeddruk & Hartslag Metingen:</label>
+        <div id="measurementsContainer"></div>
+        <button type="button" class="btn-small-add" onclick="addMeasurementRow()">+ Meting toevoegen</button>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>Verpleging:</span>
+                    <span style="color:var(--neon-cyan); cursor:pointer; font-size:11px;" onclick="openModal('nurseModal')">⚙️ Beheer</span>
+                </label>
+                <select id="nurseSelect" multiple title="Meerdere selecteerbaar"></select>
+            </div>
+            <div class="form-group">
+                <label>Notities / Welzijn:</label>
+                <input type="text" id="notes" placeholder="Bijv. moe, kramp...">
+            </div>
+        </div>
+
+        <button class="btn-submit" id="saveButton" onclick="saveSession()">SESSIE OPSLAAN & SYNC</button>
     </div>
 
     <!-- Planning Modal -->
@@ -303,7 +216,7 @@
         <div class="modal-content">
             <h3>Afspraken & Planning</h3>
             <div class="list-container" id="plannedListContainer"></div>
-            <hr style="margin: 8px 0; border:0; border-top:1px solid var(--lcars-orange);">
+            <hr style="margin: 10px 0; border:0; border-top:1px solid var(--border-glass);">
             <label>Startdatum:</label><input type="date" id="planDate">
             <label>Tijd:</label><input type="time" id="planTime" value="20:00">
             <label>Type:</label>
@@ -319,268 +232,4 @@
                 <option value="alternate">Om de dag</option>
                 <option value="daily">Elke dag</option>
             </select>
-            <div id="endDateContainer" style="display: none;">
-                <label>Tot einddatum:</label><input type="date" id="planEndDate">
-            </div>
-            <label>Notitie:</label><input type="text" id="planNote" placeholder="Optioneel">
-            <div class="modal-buttons">
-                <button class="btn-cancel" onclick="closeModal('planningModal')">Sluiten</button>
-                <button class="btn-confirm" onclick="playBeep(); addPlannedAppointment()">Inplannen</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Export Modal -->
-    <div class="modal" id="exportModal">
-        <div class="modal-content">
-            <h3>Rapport Export (PDF / Excel)</h3>
-            <label>Startdatum Periode:</label>
-            <input type="date" id="exportStartDate">
-            <label>Einddatum Periode:</label>
-            <input type="date" id="exportEndDate">
-            <div class="modal-buttons" style="flex-direction:column; gap:6px;">
-                <button class="btn-confirm" onclick="playBeep(); generatePDFReport()">📄 PRINT PDF</button>
-                <button class="btn-excel" onclick="playBeep(); generateExcelReport()">📊 EXPORTEER EXCEL (CSV)</button>
-                <button class="btn-cancel" onclick="closeModal('exportModal')">SLUITEN</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Historie Modal -->
-    <div class="modal" id="historyModal">
-        <div class="modal-content">
-            <h3>Opgeslagen Sessies</h3>
-            <div class="list-container" id="historyListContainer"></div>
-            <button class="btn-confirm" onclick="closeModal('historyModal')" style="width:100%;">SLUITEN</button>
-        </div>
-    </div>
-
-    <!-- Verpleging Beheren Modal -->
-    <div class="modal" id="nurseModal">
-        <div class="modal-content">
-            <h3>Verpleging Beheren</h3>
-            <label>Nieuwe naam toevoegen:</label>
-            <div style="display:flex; gap:6px; margin-bottom:10px;">
-                <input type="text" id="newNurseInput" placeholder="Naam verpleegkundige">
-                <button class="btn-confirm" onclick="playBeep(); addNurse()" style="width:90px; font-size:11px;">Toevoegen</button>
-            </div>
-            <label>Bestaande namen:</label>
-            <div class="list-container" id="nurseListContainer"></div>
-            <button class="btn-confirm" onclick="closeModal('nurseModal')" style="width:100%; margin-top:8px;">SLUITEN</button>
-        </div>
-    </div>
-
-    <!-- Instellingen Modal -->
-    <div class="modal" id="settingsModal">
-        <div class="modal-content">
-            <h3>Instellingen & Config</h3>
-            <label>Vast Drooggewicht (kg):</label>
-            <input type="number" step="0.1" id="configDryWeight" value="109.0">
-
-            <label style="margin-top: 8px;">Automatische PDF Tijd:</label>
-            <input type="time" id="configPdfTime" value="17:00">
-
-            <label style="margin-top: 10px;">JSONBin API Key:</label>
-            <input type="text" id="apiKeyInput" placeholder="API Key ($2a$10$...)">
-            
-            <label>JSONBin Bin ID:</label>
-            <input type="text" id="binIdInput" placeholder="Bin ID">
-            
-            <div class="modal-buttons" style="margin-top: 10px;">
-                <button class="btn-cancel" onclick="closeModal('settingsModal')">SLUITEN</button>
-                <button class="btn-confirm" onclick="playBeep(); saveSettings()">OPSLAAN & SYNC</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function playBeep() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.08);
-                gain.gain.setValueAtTime(0.15, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.08);
-            } catch(e) {}
-        }
-
-        function goBack() {
-            playBeep();
-            if (window.history.length > 1) {
-                window.history.back();
-            } else {
-                window.location.href = 'index.html';
-            }
-        }
-
-        let sessions = [];
-        let planned = [];
-        let activePlannedIndex = null;
-        let editingSessionIndex = null;
-        let nurses = JSON.parse(localStorage.getItem('dialyse_nurses')) || ['Zuster A', 'Broeder B'];
-        let dryWeight = parseFloat(localStorage.getItem('dialyse_dry_weight')) || 109.0;
-        let pdfTargetTime = localStorage.getItem('dialysis_pdf_time') || '17:00';
-        let pdfGeneratedDays = JSON.parse(localStorage.getItem('dialysis_pdf_generated')) || {};
-        let apiKey = localStorage.getItem('dialysis_jsonbin_apikey') || '';
-        let binId = localStorage.getItem('dialysis_jsonbin_binid') || '';
-
-        window.onload = async function() {
-            const now = new Date();
-            const pad = function(n) { return String(n).padStart(2, '0'); };
-            const todayStr = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate());
-            const localIso = todayStr + 'T' + pad(now.getHours()) + ':' + pad(now.getMinutes());
-            
-            document.getElementById('appointmentDateTime').value = localIso;
-            document.getElementById('connectDateTime').value = localIso;
-            document.getElementById('stopDateTime').value = localIso;
-
-            document.getElementById('exportStartDate').value = todayStr;
-            document.getElementById('exportEndDate').value = todayStr;
-            document.getElementById('planDate').value = todayStr;
-            document.getElementById('planEndDate').value = todayStr;
-            document.getElementById('todayDateStr').innerText = now.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
-
-            updateFormulaText();
-            updateNurseDropdown();
-            addMeasurementRow();
-
-            if (apiKey && binId) {
-                await syncWithCloud(false);
-            } else {
-                document.getElementById('syncStatus').innerText = 'CLOUD: OFFLINE';
-            }
-            checkTodayPlanning();
-            checkAutoPDFTrigger();
-            setInterval(checkAutoPDFTrigger, 60000);
-        };
-
-        function checkTodayPlanning() {
-            const todayStr = new Date().toISOString().split('T')[0];
-            const todayAppts = planned.filter(function(p) { return p.date === todayStr; });
-            const banner = document.getElementById('scheduledBanner');
-
-            if (todayAppts.length > 0) {
-                let html = '';
-                todayAppts.forEach(function(a) {
-                    html += '<div>⏰ <span class="badge-green">' + (a.time || '20:00') + '</span> - 🩸 <b>' + a.type + '</b> ' + (a.note ? '('+a.note+')' : '') + '</div>';
-                });
-                document.getElementById('scheduledDetailsText').innerHTML = html;
-                banner.style.display = 'block';
-            } else {
-                banner.style.display = 'none';
-            }
-        }
-
-        function loadScheduledIntoForm() {
-            const todayStr = new Date().toISOString().split('T')[0];
-            const apptIndex = planned.findIndex(function(p) { return p.date === todayStr; });
-
-            if (apptIndex !== -1) {
-                const appt = planned[apptIndex];
-                activePlannedIndex = apptIndex;
-
-                const apptTime = appt.time || '20:00';
-                const apptIso = todayStr + 'T' + apptTime;
-
-                document.getElementById('appointmentDateTime').value = apptIso;
-                document.getElementById('connectDateTime').value = apptIso;
-
-                if (appt.type.includes('+0.6') || appt.type.toLowerCase().includes('dag')) {
-                    document.getElementById('dialysisType').value = '0.6';
-                } else {
-                    document.getElementById('dialysisType').value = '0.3';
-                }
-
-                if (appt.note) {
-                    document.getElementById('notes').value = appt.note;
-                }
-
-                calculateUF();
-                document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
-                alert('Geplande afspraak gegevens ingeladen!');
-            }
-        }
-
-        function editSession(idx) {
-            const s = sessions[idx];
-            editingSessionIndex = idx;
-
-            document.getElementById('appointmentDateTime').value = s.appointmentDateTime || '';
-            document.getElementById('connectDateTime').value = s.connectDateTime || '';
-            document.getElementById('stopDateTime').value = s.stopDateTime || '';
-            document.getElementById('dialysisType').value = s.dialysisTypeName && s.dialysisTypeName.includes('0.6') ? '0.6' : '0.3';
-            
-            document.getElementById('preWeight').value = s.preWeight || '';
-            document.getElementById('postWeight').value = s.postWeight !== '-' ? s.postWeight : '';
-            document.getElementById('setUf').value = s.setUf !== '-' ? s.setUf : '';
-            
-            document.getElementById('fragmin2500').checked = !!s.fragmin2500;
-            document.getElementById('fragmin5000').checked = !!s.fragmin5000;
-            document.getElementById('epo').checked = !!s.epo;
-            document.getElementById('ijzer').checked = !!s.ijzer;
-            document.getElementById('shuntFlow').value = s.shuntFlow || '';
-            document.getElementById('notes').value = s.notes || '';
-
-            const container = document.getElementById('measurementsContainer');
-            container.innerHTML = '';
-            if (s.measurements && s.measurements.length > 0) {
-                s.measurements.forEach(function(m) {
-                    const row = document.createElement('div');
-                    row.className = 'measurement-row';
-                    row.innerHTML = '<input type="text" style="width:70px;" placeholder="Tijd" value="' + (m.time || '') + '" class="m-time"><input type="number" placeholder="Sys" value="' + (m.sys !== '-' ? m.sys : '') + '" class="m-sys"><span style="color:var(--lcars-tan);">/</span><input type="number" placeholder="Dia" value="' + (m.dia !== '-' ? m.dia : '') + '" class="m-dia"><input type="number" placeholder="HR" value="' + (m.hr !== '-' ? m.hr : '') + '" class="m-hr"><button type="button" class="btn-small-del" onclick="this.parentElement.remove()">✕</button>';
-                    container.appendChild(row);
-                });
-            } else {
-                addMeasurementRow();
-            }
-
-            const nurseSelect = document.getElementById('nurseSelect');
-            Array.from(nurseSelect.options).forEach(function(opt) {
-                opt.selected = s.nurses && s.nurses.includes(opt.value);
-            });
-
-            calculateUF();
-
-            document.getElementById('formCardTitle').innerText = 'Sessie Bewerken (Record #' + (idx + 1) + ')';
-            document.getElementById('editingIndicator').style.display = 'block';
-            document.getElementById('cancelEditBtn').style.display = 'inline';
-            document.getElementById('saveButton').innerText = 'WIJZIGINGEN OPSLAAN';
-
-            closeModal('historyModal');
-            document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function cancelEditMode() {
-            editingSessionIndex = null;
-            document.getElementById('formCardTitle').innerText = 'Nieuwe Dialyse Sessie';
-            document.getElementById('editingIndicator').style.display = 'none';
-            document.getElementById('cancelEditBtn').style.display = 'none';
-            document.getElementById('saveButton').innerText = 'SESSIE OPSLAAN & SYNC';
-            
-            document.getElementById('preWeight').value = '';
-            document.getElementById('postWeight').value = '';
-            document.getElementById('setUf').value = '';
-            document.getElementById('shuntFlow').value = '';
-            document.getElementById('notes').value = '';
-            calculateUF();
-        }
-
-        function checkAutoPDFTrigger() {
-            const todayStr = new Date().toISOString().split('T')[0];
-            if (pdfGeneratedDays[todayStr]) {
-                document.getElementById('autoPdfBanner').style.display = 'none';
-                return;
-            }
-
-            const now = new Date();
-            const currentTime = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
-
-            if (currentTime >= pdfTargetTime) {
-                document.getElementById('auto
+            <div id="endDateContainer
