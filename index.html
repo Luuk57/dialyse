@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dialyse Monitor - NetwerkOS (Force Sync)</title>
+    <title>Dialyse Monitor - Aanpasbaar Drooggewicht</title>
     <style>
         body, html {
             margin: 0; padding: 15px; width: 100%; height: 100%;
@@ -46,7 +46,6 @@
         .result-box { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-radius: 6px; background: #f5f5f5; border: 1px solid #e0e0e0; margin-top: 10px; }
         .uf-badge { padding: 5px 10px; border-radius: 6px; font-weight: bold; color: white; font-size: 12px; }
 
-        /* CLOUD VERKLIKKER MET SYNC KNOP */
         .cloud-container { display: flex; align-items: center; gap: 8px; }
         .cloud-status {
             display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
@@ -114,7 +113,7 @@
                         <input type="datetime-local" id="stopTijd">
                     </div>
                     <div class="form-group">
-                        <label>Type Dialyse (Drooggewicht: 121kg)</label>
+                        <label>Type Dialyse</label>
                         <select id="typeDialyse">
                             <option value="Nachtdialyse (+0.3 kg)">Nachtdialyse (+0.3 kg)</option>
                             <option value="Dagdialyse">Dagdialyse</option>
@@ -122,7 +121,12 @@
                     </div>
                 </div>
 
+                <!-- GEWICHTEN EN DROOGGEWICHT INSTELLING -->
                 <div class="form-grid" style="margin-top: 8px;">
+                    <div class="form-group">
+                        <label style="color: #0067c0; font-weight: bold;">⚖️ Instelbaar Drooggewicht (kg)</label>
+                        <input type="number" step="0.1" id="dryWeight" value="109.0" oninput="berekenUF()" style="border-color: #0067c0; font-weight: bold; background: #f0f7ff;">
+                    </div>
                     <div class="form-group">
                         <label>Pre-Gewicht (kg)</label>
                         <input type="number" step="0.1" id="preWeight" placeholder="Bijv. 112.5" oninput="berekenUF()">
@@ -281,6 +285,7 @@
         const JSONBIN_API_KEY = '$2a$10$AAsaI9LebId4BAj60iBn3.V/Y3ayfLpT5qI5vhouztfHHUpgmuQdG';
 
         let dialyseData = {
+            dryWeight: 109.0,
             sessies: [],
             planning: []
         };
@@ -323,6 +328,7 @@
 
         function berekenUF() {
             let preWeight = parseFloat(document.getElementById('preWeight').value);
+            let dryWeight = parseFloat(document.getElementById('dryWeight').value) || 109.0;
             let ufResTxt = document.getElementById('ufResultTxt');
             let ufBadge = document.getElementById('ufBadge');
 
@@ -333,7 +339,8 @@
                 return;
             }
 
-            let uf = preWeight - 121 + 0.3;
+            // BEREKENING: PRE - DROOG + 0.3
+            let uf = preWeight - dryWeight + 0.3;
             uf = Math.round(uf * 10) / 10;
             ufResTxt.textContent = uf;
 
@@ -360,19 +367,30 @@
                 if (data && data.record) {
                     dialyseData.sessies = data.record.dialyseSessies || [];
                     dialyseData.planning = data.record.dialysePlanning || [];
+                    if (data.record.dryWeight) {
+                        dialyseData.dryWeight = data.record.dryWeight;
+                        document.getElementById('dryWeight').value = data.record.dryWeight;
+                    }
                 }
                 updateDialyseTabel();
                 updatePlanningTabel();
+                berekenUF();
                 updateCloudVerklikker('connected', 'Verbonden');
             })
             .catch(err => {
                 console.log("Laden mislukt, lokaal proberen:", err);
                 let lokaalSessies = localStorage.getItem('dialyse_sessies_uitgebreid');
                 let lokaalPlan = localStorage.getItem('dialyse_planning');
+                let lokaalDry = localStorage.getItem('dialyse_dryweight');
                 if (lokaalSessies) dialyseData.sessies = JSON.parse(lokaalSessies);
                 if (lokaalPlan) dialyseData.planning = JSON.parse(lokaalPlan);
+                if (lokaalDry) {
+                    dialyseData.dryWeight = parseFloat(lokaalDry);
+                    document.getElementById('dryWeight').value = lokaalDry;
+                }
                 updateDialyseTabel();
                 updatePlanningTabel();
+                berekenUF();
                 updateCloudVerklikker('offline', 'Offline');
             });
         }
@@ -387,8 +405,13 @@
                 if (data && data.record) {
                     dialyseData.sessies = data.record.dialyseSessies || [];
                     dialyseData.planning = data.record.dialysePlanning || [];
+                    if (data.record.dryWeight) {
+                        dialyseData.dryWeight = data.record.dryWeight;
+                        document.getElementById('dryWeight').value = data.record.dryWeight;
+                    }
                     updateDialyseTabel();
                     updatePlanningTabel();
+                    berekenUF();
                     updateCloudVerklikker('connected', 'Verbonden');
                 }
             })
@@ -399,10 +422,16 @@
 
         function slaDialyseNaarServer() {
             updateCloudVerklikker('syncing', 'Opslaan...');
+            
+            let actueelDroog = parseFloat(document.getElementById('dryWeight').value) || 109.0;
+            dialyseData.dryWeight = actueelDroog;
+
             localStorage.setItem('dialyse_sessies_uitgebreid', JSON.stringify(dialyseData.sessies));
             localStorage.setItem('dialyse_planning', JSON.stringify(dialyseData.planning));
+            localStorage.setItem('dialyse_dryweight', actueelDroog);
 
             let payload = {
+                dryWeight: actueelDroog,
                 dialyseSessies: dialyseData.sessies,
                 dialysePlanning: dialyseData.planning
             };
@@ -541,12 +570,14 @@
 
         function slaDialyseSessieOp() {
             let preWeight = parseFloat(document.getElementById('preWeight').value);
+            let dryWeight = parseFloat(document.getElementById('dryWeight').value) || 109.0;
+
             if (isNaN(preWeight)) {
                 alert('Vul ten minste een geldig pre-gewicht in.');
                 return;
             }
 
-            let uf = Math.round((preWeight - 109 + 0.3) * 10) / 10;
+            let uf = Math.round((preWeight - dryWeight + 0.3) * 10) / 10;
             let status = 'Groen (Veilig)';
             let badgeColor = '#107c41';
 
@@ -567,6 +598,7 @@
                 stop: document.getElementById('stopTijd').value,
                 type: document.getElementById('typeDialyse').value,
                 preWeight: preWeight,
+                dryWeight: dryWeight,
                 postWeight: parseFloat(document.getElementById('postWeight').value) || 0,
                 uf: uf,
                 ingesteldeUf: document.getElementById('ingesteldeUf').value,
