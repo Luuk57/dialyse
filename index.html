@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dialyse Monitor - Aanpasbaar Drooggewicht</title>
+    <title>Dialyse Monitor - Aanpasbaar Drooggewicht Fix</title>
     <style>
         body, html {
             margin: 0; padding: 15px; width: 100%; height: 100%;
@@ -124,8 +124,8 @@
                 <!-- GEWICHTEN EN DROOGGEWICHT INSTELLING -->
                 <div class="form-grid" style="margin-top: 8px;">
                     <div class="form-group">
-                        <label style="color: #0067c0; font-weight: bold;">⚖️ Instelbaar Drooggewicht (kg)</label>
-                        <input type="number" step="0.1" id="dryWeight" value="109.0" oninput="berekenUF()" style="border-color: #0067c0; font-weight: bold; background: #f0f7ff;">
+                        <label style="color: #0067c0; font-weight: bold;">⚖️ Drooggewicht (kg)</label>
+                        <input type="number" step="0.1" id="dryWeight" value="109.0" oninput="berekenUF()" onchange="updateDroogGewicht()" style="border-color: #0067c0; font-weight: bold; background: #f0f7ff;">
                     </div>
                     <div class="form-group">
                         <label>Pre-Gewicht (kg)</label>
@@ -356,6 +356,16 @@
             }
         }
 
+        /* --- NIEUW: DIRECT DROOGGEWICHT OPSLAAN BIJ WIJZIGEN --- */
+        function updateDroogGewicht() {
+            let nieuwGewicht = parseFloat(document.getElementById('dryWeight').value);
+            if (!isNaN(nieuwGewicht) && nieuwGewicht > 0) {
+                dialyseData.dryWeight = nieuwGewicht;
+                berekenUF();
+                slaDialyseNaarServer();
+            }
+        }
+
         function laadDialyseVanServer() {
             updateCloudVerklikker('syncing', 'Laden...');
             fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
@@ -367,9 +377,13 @@
                 if (data && data.record) {
                     dialyseData.sessies = data.record.dialyseSessies || [];
                     dialyseData.planning = data.record.dialysePlanning || [];
-                    if (data.record.dryWeight) {
-                        dialyseData.dryWeight = data.record.dryWeight;
-                        document.getElementById('dryWeight').value = data.record.dryWeight;
+                    
+                    // Alleen bijwerken als de gebruiker niet actief in het veld staat te typen
+                    if (document.activeElement !== document.getElementById('dryWeight')) {
+                        if (data.record.dryWeight) {
+                            dialyseData.dryWeight = data.record.dryWeight;
+                            document.getElementById('dryWeight').value = data.record.dryWeight;
+                        }
                     }
                 }
                 updateDialyseTabel();
@@ -405,9 +419,12 @@
                 if (data && data.record) {
                     dialyseData.sessies = data.record.dialyseSessies || [];
                     dialyseData.planning = data.record.dialysePlanning || [];
-                    if (data.record.dryWeight) {
-                        dialyseData.dryWeight = data.record.dryWeight;
-                        document.getElementById('dryWeight').value = data.record.dryWeight;
+                    
+                    if (document.activeElement !== document.getElementById('dryWeight')) {
+                        if (data.record.dryWeight) {
+                            dialyseData.dryWeight = data.record.dryWeight;
+                            document.getElementById('dryWeight').value = data.record.dryWeight;
+                        }
                     }
                     updateDialyseTabel();
                     updatePlanningTabel();
