@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dialyse Monitor - NetwerkOS (Cloud Fix)</title>
+    <title>Dialyse Monitor - NetwerkOS (Force Sync)</title>
     <style>
         body, html {
             margin: 0; padding: 15px; width: 100%; height: 100%;
@@ -46,10 +46,13 @@
         .result-box { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-radius: 6px; background: #f5f5f5; border: 1px solid #e0e0e0; margin-top: 10px; }
         .uf-badge { padding: 5px 10px; border-radius: 6px; font-weight: bold; color: white; font-size: 12px; }
 
+        /* CLOUD VERKLIKKER MET SYNC KNOP */
+        .cloud-container { display: flex; align-items: center; gap: 8px; }
         .cloud-status {
-            display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px;
-            border-radius: 12px; font-size: 10px; font-weight: 600; background: #f0f0f0; border: 1px solid #ccc;
+            display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
+            border-radius: 12px; font-size: 10px; font-weight: 600; background: #f0f0f0; border: 1px solid #ccc; cursor: pointer;
         }
+        .cloud-status:hover { background: #e2e2e2; }
         .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #ca5010; display: inline-block; }
         .status-dot.connected { background: #107c41; box-shadow: 0 0 6px #107c41; }
         .status-dot.syncing { background: #ca5010; animation: blink 1s infinite; }
@@ -63,7 +66,7 @@
 
         @media print {
             body { background: white; padding: 0; }
-            .tabs-container, .btn-app, .cloud-status, form, .no-print { display: none !important; }
+            .tabs-container, .btn-app, .cloud-container, form, .no-print { display: none !important; }
             .pos-card { border: none; box-shadow: none; padding: 0; }
         }
     </style>
@@ -78,9 +81,12 @@
                 <button class="tab-btn" onclick="wisselTab('historieTab', this)">📋 Historie Lijst</button>
             </div>
 
-            <div class="cloud-status">
-                <span id="cloudDot" class="status-dot syncing"></span>
-                <span id="cloudTxt">Verbinden...</span>
+            <div class="cloud-container">
+                <button class="btn-app" style="padding: 4px 8px; font-size: 10px;" onclick="laadDialyseVanServer()">🔄 Sync Nu</button>
+                <div class="cloud-status" onclick="laadDialyseVanServer()" title="Klik om handmatig te synchroniseren">
+                    <span id="cloudDot" class="status-dot syncing"></span>
+                    <span id="cloudTxt">Verbinden...</span>
+                </div>
             </div>
         </div>
 
@@ -346,7 +352,8 @@
         function laadDialyseVanServer() {
             updateCloudVerklikker('syncing', 'Laden...');
             fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-                headers: { 'X-Master-Key': JSONBIN_API_KEY }
+                headers: { 'X-Master-Key': JSONBIN_API_KEY },
+                cache: 'no-store'
             })
             .then(res => res.json())
             .then(data => {
@@ -356,7 +363,7 @@
                 }
                 updateDialyseTabel();
                 updatePlanningTabel();
-                updateCloudVerklikker('connected', 'JSONBin Online');
+                updateCloudVerklikker('connected', 'Verbonden');
             })
             .catch(err => {
                 console.log("Laden mislukt, lokaal proberen:", err);
@@ -366,13 +373,14 @@
                 if (lokaalPlan) dialyseData.planning = JSON.parse(lokaalPlan);
                 updateDialyseTabel();
                 updatePlanningTabel();
-                updateCloudVerklikker('offline', 'Offline (Lokaal)');
+                updateCloudVerklikker('offline', 'Offline');
             });
         }
 
         function laadDialyseVanServerStil() {
             fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-                headers: { 'X-Master-Key': JSONBIN_API_KEY }
+                headers: { 'X-Master-Key': JSONBIN_API_KEY },
+                cache: 'no-store'
             })
             .then(res => res.json())
             .then(data => {
@@ -381,11 +389,11 @@
                     dialyseData.planning = data.record.dialysePlanning || [];
                     updateDialyseTabel();
                     updatePlanningTabel();
-                    updateCloudVerklikker('connected', 'JSONBin Online');
+                    updateCloudVerklikker('connected', 'Verbonden');
                 }
             })
             .catch(err => {
-                console.log("Achtergrond sync stil mislukt");
+                console.log("Stille achtergrond sync mislukt");
             });
         }
 
@@ -408,18 +416,16 @@
                 body: JSON.stringify(payload)
             })
             .then(res => {
-                if (!res.ok) {
-                    throw new Error('Netwerk response was niet ok: ' + res.status);
-                }
+                if (!res.ok) throw new Error('HTTP error ' + res.status);
                 return res.json();
             })
             .then(data => {
-                console.log("Succesvol opgeslagen in Bin:", data);
-                updateCloudVerklikker('connected', 'JSONBin Gesynct');
+                console.log("Opgeslagen in Bin:", data);
+                updateCloudVerklikker('connected', 'Verbonden');
             })
             .catch(err => {
-                console.error("JSONBin sync fout:", err);
-                updateCloudVerklikker('offline', 'Sync Fout (Lokaal)');
+                console.error("Sync fout:", err);
+                updateCloudVerklikker('offline', 'Sync Fout');
             });
         }
 
@@ -480,7 +486,7 @@
 
             slaDialyseNaarServer();
             updatePlanningTabel();
-            alert('Planning succesvol toegevoegd en gesynchroniseerd!');
+            alert('Planning gegenereerd en naar de cloud verzonden!');
         }
 
         function bewerkPlanning(id) {
@@ -585,7 +591,7 @@
             document.getElementById('bewerkModeIndicator').style.display = 'none';
             document.getElementById('formulierTitel').textContent = '🩺 NIEUWE DIALYSESESSIE REGISTREREN';
 
-            alert('Dialysesessie succesvol opgeslagen en gesynchroniseerd!');
+            alert('Sessie opgeslagen en naar de cloud gestuurd!');
         }
 
         function verwijderSessie(id) {
