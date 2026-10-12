@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dialyse Monitor - NetwerkOS (Auto-Sync)</title>
+    <title>Dialyse Monitor - NetwerkOS (Cloud Fix)</title>
     <style>
         body, html {
             margin: 0; padding: 15px; width: 100%; height: 100%;
@@ -16,7 +16,6 @@
         
         .section-header { margin: 0 0 8px 0; color: #0067c0; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
 
-        /* TABS STIJL */
         .tabs-container { display: flex; gap: 6px; margin-bottom: 12px; border-bottom: 1px solid #e0e0e0; padding-bottom: 8px; }
         .tab-btn { padding: 6px 12px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; color: #444; }
         .tab-btn.active { background: #0067c0; color: white; border-color: #005aab; }
@@ -47,7 +46,6 @@
         .result-box { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-radius: 6px; background: #f5f5f5; border: 1px solid #e0e0e0; margin-top: 10px; }
         .uf-badge { padding: 5px 10px; border-radius: 6px; font-weight: bold; color: white; font-size: 12px; }
 
-        /* CLOUD VERKLIKKER */
         .cloud-status {
             display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px;
             border-radius: 12px; font-size: 10px; font-weight: 600; background: #f0f0f0; border: 1px solid #ccc;
@@ -73,7 +71,6 @@
 <body>
 
     <div class="dialyse-layout">
-        <!-- HEADER MET CLOUD VERKLIKKER -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <div class="tabs-container" style="margin-bottom: 0; border: none; padding: 0;">
                 <button class="tab-btn active" onclick="wisselTab('invoerTab', this)">📝 Nieuwe Sessie</button>
@@ -111,7 +108,7 @@
                         <input type="datetime-local" id="stopTijd">
                     </div>
                     <div class="form-group">
-                        <label>Type Dialyse (Drooggewicht: 121kg)</label>
+                        <label>Type Dialyse (Drooggewicht: 109kg)</label>
                         <select id="typeDialyse">
                             <option value="Nachtdialyse (+0.3 kg)">Nachtdialyse (+0.3 kg)</option>
                             <option value="Dagdialyse">Dagdialyse</option>
@@ -274,7 +271,7 @@
     </div>
 
     <script>
-        const JSONBIN_BIN_ID = '6acd10cdac6210605a2b2502';
+        const JSONBIN_BIN_ID = '6acce498ffd5d160536459be';
         const JSONBIN_API_KEY = '$2a$10$AAsaI9LebId4BAj60iBn3.V/Y3ayfLpT5qI5vhouztfHHUpgmuQdG';
 
         let dialyseData = {
@@ -293,8 +290,6 @@
             document.getElementById('planStartTijd').value = lokaalIso;
 
             laadDialyseVanServer();
-
-            // AUTOMATISCHE ACHTERGROND-SYNC ELKE 10 SECONDEN
             setInterval(laadDialyseVanServerStil, 10000);
         };
 
@@ -356,8 +351,8 @@
             .then(res => res.json())
             .then(data => {
                 if (data && data.record) {
-                    if(data.record.dialyseSessies) dialyseData.sessies = data.record.dialyseSessies;
-                    if(data.record.dialysePlanning) dialyseData.planning = data.record.dialysePlanning;
+                    dialyseData.sessies = data.record.dialyseSessies || [];
+                    dialyseData.planning = data.record.dialysePlanning || [];
                 }
                 updateDialyseTabel();
                 updatePlanningTabel();
@@ -375,7 +370,6 @@
             });
         }
 
-        // Stille sync voor de achtergrond (zonder storende laadstatus in de verklikker)
         function laadDialyseVanServerStil() {
             fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
                 headers: { 'X-Master-Key': JSONBIN_API_KEY }
@@ -383,8 +377,8 @@
             .then(res => res.json())
             .then(data => {
                 if (data && data.record) {
-                    if(data.record.dialyseSessies) dialyseData.sessies = data.record.dialyseSessies;
-                    if(data.record.dialysePlanning) dialyseData.planning = data.record.dialysePlanning;
+                    dialyseData.sessies = data.record.dialyseSessies || [];
+                    dialyseData.planning = data.record.dialysePlanning || [];
                     updateDialyseTabel();
                     updatePlanningTabel();
                     updateCloudVerklikker('connected', 'JSONBin Online');
@@ -400,22 +394,31 @@
             localStorage.setItem('dialyse_sessies_uitgebreid', JSON.stringify(dialyseData.sessies));
             localStorage.setItem('dialyse_planning', JSON.stringify(dialyseData.planning));
 
+            let payload = {
+                dialyseSessies: dialyseData.sessies,
+                dialysePlanning: dialyseData.planning
+            };
+
             fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-Master-Key': JSONBIN_API_KEY
                 },
-                body: JSON.stringify({ 
-                    dialyseSessies: dialyseData.sessies,
-                    dialysePlanning: dialyseData.planning
-                })
+                body: JSON.stringify(payload)
             })
-            .then(() => {
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('Netwerk response was niet ok: ' + res.status);
+                }
+                return res.json();
+            })
+            .then(data => {
+                console.log("Succesvol opgeslagen in Bin:", data);
                 updateCloudVerklikker('connected', 'JSONBin Gesynct');
             })
             .catch(err => {
-                console.log("JSONBin sync fout:", err);
+                console.error("JSONBin sync fout:", err);
                 updateCloudVerklikker('offline', 'Sync Fout (Lokaal)');
             });
         }
