@@ -54,19 +54,20 @@
         .btn-start { background: #107c41; }
         .btn-stop { background: #d13438; }
         .btn-save { background: var(--win-blue); width: 100%; padding: 12px; font-size: 14px; margin-top: 10px; }
+        .btn-small { padding: 4px 8px; font-size: 11px; background: #0078d7; color: white; border: none; border-radius: 3px; cursor: pointer; }
 
         .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12px; margin-top: 6px; background: #fdfdfd; padding: 8px; border: 1px solid #eee; border-radius: 4px; }
         .checkbox-row { display: flex; align-items: center; gap: 6px; cursor: pointer; }
 
         table.dialyse-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 12px; background: #fff; }
-        table.dialyse-table th, table.dialyse-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        table.dialyse-table th, table.dialyse-table td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: middle; }
         table.dialyse-table th { background: var(--win-blue); color: white; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <span>🐙 Dialyse Monitor (GitHub)</span>
+        <span>🐙 Dialyse Monitor (GitHub & JSONBin)</span>
         <div class="header-btns">
             <button type="button" class="top-btn" onclick="toggleFullscreen()">⛶ Volledig Scherm</button>
             <button type="button" class="top-btn" onclick="laadDataVanBin()">🔄 Sync</button>
@@ -82,6 +83,10 @@
 
     <!-- TAB 1: INVOER & STOPWATCH -->
     <div id="invoerTab" class="tab-content active">
+        <div class="card" id="actieveSessieBanner" style="background: #e8f4fd; border-left: 4px solid var(--win-blue); display: none; padding: 8px 12px; margin-bottom: 8px; font-size: 12px;">
+            <b>📌 Actieve planning van vandaag geladen!</b>
+        </div>
+
         <div class="card">
             <div class="section-title">⏱️ Tijden & Stopwatch</div>
             <div class="grid-2">
@@ -163,24 +168,30 @@
                     <input type="date" id="planEind">
                 </div>
             </div>
-            <div class="form-group" style="margin-top: 6px;">
-                <label>Herhaling</label>
-                <select id="planHerhaling">
-                    <option value="omdedag">Om de dag</option>
-                    <option value="elkedag">Elke dag</option>
-                </select>
+            <div class="grid-2" style="margin-top: 6px;">
+                <div class="form-group">
+                    <label>Tijd (Aansluit)</label>
+                    <input type="time" id="planTijd" value="22:30">
+                </div>
+                <div class="form-group">
+                    <label>Herhaling</label>
+                    <select id="planHerhaling">
+                        <option value="omdedag">Om de dag</option>
+                        <option value="elkedag">Elke dag</option>
+                    </select>
+                </div>
             </div>
             <button type="button" class="action-btn btn-save" onclick="genereerEnSlaPlanning()">📅 Genereer & Opslaan in Cloud</button>
         </div>
 
         <div class="card">
-            <div class="section-title">📋 Gedeelde Planning</div>
+            <div class="section-title">📋 Gedeelde Planning (Tijden aanpasbaar)</div>
             <table class="dialyse-table">
                 <thead>
                     <tr>
-                        <th>Datum / Tijd</th>
+                        <th>Datum & Tijd</th>
                         <th>Type</th>
-                        <th>Herhaling</th>
+                        <th>Actie</th>
                     </tr>
                 </thead>
                 <tbody id="planningTabelBody">
@@ -211,7 +222,6 @@
     </div>
 
     <script>
-        // Jouw JSONBin gegevens ingebed:
         const JSONBIN_ID = "6acf500fac6210605a3048c1";
         const API_KEY = "$2a$10$AAsaI9LebId4BAj60iBn3.V/Y3ayfLpT5qI5vhouztfHHUpgmuQdG";
 
@@ -222,7 +232,6 @@
         window.addEventListener('DOMContentLoaded', () => {
             let nu = new Date();
             let offsetMs = nu.getTimezoneOffset() * 60000;
-            document.getElementById('aansluitTijd').value = new Date(nu.getTime() - offsetMs).toISOString().slice(0, 16);
             document.getElementById('planStart').value = nu.toISOString().split('T')[0];
 
             let ochtend = new Date(nu);
@@ -246,6 +255,7 @@
                 }
                 vulPlanningTabel(centraleData.planning);
                 vulHistorieTabel(centraleData.historie);
+                controleerEnVulHuidigeSessie(centraleData.planning);
             })
             .catch(err => console.error("Fout bij laden van JSONBin:", err));
         }
@@ -366,11 +376,12 @@
         function genereerEnSlaPlanning() {
             let startStr = document.getElementById('planStart').value;
             let eindStr = document.getElementById('planEind').value;
+            let tijdStr = document.getElementById('planTijd').value || '22:30';
             let herhaling = document.getElementById('planHerhaling').value;
 
             if (!startStr || !eindStr) { alert('Vul datums in.'); return; }
 
-            let d = new Date(startStr + 'T22:30:00');
+            let d = new Date(startStr + 'T' + tijdStr + ':00');
             let eindD = new Date(eindStr + 'T23:59:59');
             let lijst = [];
 
@@ -378,8 +389,11 @@
                 let y = d.getFullYear();
                 let m = String(d.getMonth() + 1).padStart(2, '0');
                 let dt = String(d.getDate()).padStart(2, '0');
+                let hh = String(d.getHours()).padStart(2, '0');
+                let mm = String(d.getMinutes()).padStart(2, '0');
+
                 lijst.push({
-                    DatumTijd: `${y}-${m}-${dt} 22:30`,
+                    DatumTijd: `${y}-${m}-${dt}T${hh}:${mm}`,
                     Type: 'Nachtdialyse (+0.3 kg)',
                     Herhaling: herhaling
                 });
@@ -391,7 +405,8 @@
             centraleData.planning = lijst;
             slaGeheleDataNaarBin();
             vulPlanningTabel(lijst);
-            alert('Planning opgeslagen in JSONBin!');
+            controleerEnVulHuidigeSessie(lijst);
+            alert('Planning gegenereerd en opgeslagen in JSONBin!');
         }
 
         function vulPlanningTabel(planning) {
@@ -401,11 +416,56 @@
                 tbody.innerHTML = '<tr><td colspan="3" style="color: #888;">Geen planning gevonden.</td></tr>';
                 return;
             }
-            planning.forEach(p => {
+            planning.forEach((p, index) => {
                 let tr = document.createElement('tr');
-                tr.innerHTML = `<td><b>${p.DatumTijd}</b></td><td>${p.Type}</td><td>${p.Herhaling}</td>`;
+                let formattedVal = p.DatumTijd.replace(' ', 'T');
+                tr.innerHTML = `
+                    <td><input type="datetime-local" id="plan_dt_${index}" value="${formattedVal}" style="padding:4px; font-size:12px; width:100%;"></td>
+                    <td>${p.Type}</td>
+                    <td><button type="button" class="btn-small" onclick="updatePlanningItem(${index})">💾 Opslaan</button></td>
+                `;
                 tbody.appendChild(tr);
             });
+        }
+
+        function updatePlanningItem(index) {
+            let nieuweVal = document.getElementById(`plan_dt_${index}`).value;
+            if (!nieuweVal) return;
+            centraleData.planning[index].DatumTijd = nieuweVal;
+            slaGeheleDataNaarBin();
+            controleerEnVulHuidigeSessie(centraleData.planning);
+            alert('Afspraak tijd bijgewerkt in cloud!');
+        }
+
+        function controleerEnVulHuidigeSessie(planning) {
+            if (!planning || planning.length === 0) return;
+            let nu = new Date();
+            
+            // Sorteer planning op datum/tijd oplopend
+            let gesorteerd = [...planning].sort((a, b) => new Date(a.DatumTijd) - new Date(b.DatumTijd));
+            
+            // Zoek de eerste afspraak die vandaag of in de toekomst ligt
+            let actueel = gesorteerd.find(p => new Date(p.DatumTijd) >= new Date(nu.toDateString()));
+            if (!actueel && gesorteerd.length > 0) {
+                actueel = gesorteerd[0]; // Fallback op de laatste als alles in het verleden ligt
+            }
+
+            if (actueel) {
+                let aansluitInput = document.getElementById('aansluitTijd');
+                // Formatteer voor datetime-local (YYYY-MM-DDTHH:mm)
+                let dtClean = actueel.DatumTijd.replace(' ', 'T');
+                aansluitInput.value = dtClean;
+
+                // Zet afsluit tijd automatisch op 8 uur later (of pas aan indien gewenst)
+                let aansluitDate = new Date(dtClean);
+                aansluitDate.setHours(aansluitDate.getHours() + 8);
+                let offsetMs = aansluitDate.getTimezoneOffset() * 60000;
+                let afsluitIso = new Date(aansluitDate.getTime() - offsetMs).toISOString().slice(0, 16);
+                document.getElementById('afsluitTijd').value = afsluitIso;
+
+                document.getElementById('actieveSessieBanner').style.display = 'block';
+                document.getElementById('actieveSessieBanner').innerHTML = `<b>📌 Actieve afspraak geladen:</b> ${actueel.DatumTijd.replace('T', ' ')}`;
+            }
         }
 
         function slaSessieNaarBin() {
