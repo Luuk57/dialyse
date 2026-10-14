@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dialyse Monitor - JSONBin</title>
+    <title>Dialyse Monitor - GitHub & JSONBin</title>
     <style>
         :root {
             --win-blue: #0078d7;
@@ -66,7 +66,7 @@
 <body>
 
     <div class="header">
-        <span>☁️ Dialyse Monitor (JSONBin)</span>
+        <span>🐙 Dialyse Monitor (GitHub)</span>
         <div class="header-btns">
             <button type="button" class="top-btn" onclick="toggleFullscreen()">⛶ Volledig Scherm</button>
             <button type="button" class="top-btn" onclick="laadDataVanBin()">🔄 Sync</button>
@@ -211,12 +211,9 @@
     </div>
 
     <script>
-        // ==========================================
-        // VUL HIER JOUW JSONBIN GEGEVENS IN:
-        // ==========================================
-        const JSONBIN_ID = "JOUW_BIN_ID_HIER";
-        const API_KEY = "JOUW_MASTER_KEY_HIER";
-        // ==========================================
+        // Jouw JSONBin gegevens ingebed:
+        const JSONBIN_ID = "6acf500fac6210605a3048c1";
+        const API_KEY = "$2a$10$AAsaI9LebId4BAj60iBn3.V/Y3ayfLpT5qI5vhouztfHHUpgmuQdG";
 
         let timerInterval = null;
         let stopwatchStart = null;
@@ -237,11 +234,6 @@
         });
 
         function laadDataVanBin() {
-            if (JSONBIN_ID.includes("JOUW_")) {
-                alert("Vergeet niet je JSONBin ID en API Key in de HTML code in te vullen!");
-                return;
-            }
-
             fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
                 headers: { 'X-Master-Key': API_KEY }
             })
