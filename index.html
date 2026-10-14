@@ -2,328 +2,345 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dialyse Monitor - Aanpasbaar Drooggewicht Fix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dialyse Monitor - JSONBin</title>
     <style>
-        body, html {
-            margin: 0; padding: 15px; width: 100%; height: 100%;
-            box-sizing: border-box; font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
-            background: #ffffff; color: #202020; user-select: none; overflow-y: auto;
+        :root {
+            --win-blue: #0078d7;
+            --win-bg: #f3f3f3;
+            --win-dark: #202020;
+            --card-bg: #ffffff;
+            --border-color: #d1d1d1;
+            --font-ui: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        .dialyse-layout { display: flex; flex-direction: column; gap: 12px; max-width: 900px; margin: 0 auto; padding-bottom: 30px; }
-        .pos-card { background: #fdfdfd; border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        
-        .section-header { margin: 0 0 8px 0; color: #0067c0; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-ui); }
+        body, html { width: 100%; height: 100%; background: var(--win-bg); color: var(--win-dark); display: flex; flex-direction: column; overflow: hidden; }
 
-        .tabs-container { display: flex; gap: 6px; margin-bottom: 12px; border-bottom: 1px solid #e0e0e0; padding-bottom: 8px; }
-        .tab-btn { padding: 6px 12px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; color: #444; }
-        .tab-btn.active { background: #0067c0; color: white; border-color: #005aab; }
+        /* HEADER */
+        .header {
+            background: var(--win-blue); color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: bold; flex-shrink: 0;
+        }
+        .header-btns { display: flex; gap: 6px; }
+        .top-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; }
 
-        .tab-content { display: none; }
+        /* TAB BAR */
+        .tab-bar { display: flex; background: #e5e5e5; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+        .tab-btn { flex: 1; padding: 10px; font-size: 12px; font-weight: bold; background: #d6d6d6; border: none; cursor: pointer; text-align: center; color: #444; }
+        .tab-btn.active { background: var(--card-bg); color: var(--win-blue); border-bottom: 3px solid var(--win-blue); }
+
+        /* CONTENT */
+        .tab-content { display: none; flex: 1; padding: 12px; overflow-y: auto; width: 100%; }
         .tab-content.active { display: block; }
 
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
-        .form-group { display: flex; flex-direction: column; gap: 3px; }
+        .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; margin-bottom: 12px; width: 100%; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+        .section-title { font-size: 12px; font-weight: bold; color: var(--win-blue); text-transform: uppercase; margin-bottom: 8px; border-bottom: 2px solid var(--win-blue); padding-bottom: 3px; }
+
+        .form-group { display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px; }
         .form-group label { font-size: 11px; font-weight: 600; color: #555; }
-        .form-group input, .form-group select, .form-group textarea {
-            padding: 7px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; outline: none; background: #fff;
-        }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #0067c0; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; background: #fff; }
 
-        .checkbox-row { display: flex; gap: 20px; align-items: center; margin-top: 4px; font-size: 12px; }
-        .checkbox-row label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: normal; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-        .btn-app { padding: 8px 14px; background: #0067c0; color: white; border: 1px solid #005aab; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; }
-        .btn-app:hover { background: #005aab; }
-        .btn-success { background: #107c41; border-color: #0b5a2f; }
-        .btn-success:hover { background: #0b5a2f; }
-        .btn-danger { background: #d13438; border-color: #a8272a; }
-        .btn-danger:hover { background: #a8272a; }
-        .btn-warning { background: #ca5010; border-color: #9a3c0a; color: white; }
-        .btn-warning:hover { background: #9a3c0a; }
+        .result-box { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 4px; background: #eef6fc; border-left: 4px solid var(--win-blue); margin-top: 8px; }
+        .uf-badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; font-size: 11px; }
 
-        .result-box { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-radius: 6px; background: #f5f5f5; border: 1px solid #e0e0e0; margin-top: 10px; }
-        .uf-badge { padding: 5px 10px; border-radius: 6px; font-weight: bold; color: white; font-size: 12px; }
+        /* STOPWATCH */
+        .timer-box { position: relative; overflow: hidden; background: #d32f2f; padding: 12px; border-radius: 6px; text-align: center; margin-top: 8px; transition: background 0.5s ease; }
+        .timer-display { position: relative; z-index: 2; font-size: 30px; font-weight: bold; font-family: monospace; color: #ffffff; }
 
-        .cloud-container { display: flex; align-items: center; gap: 8px; }
-        .cloud-status {
-            display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
-            border-radius: 12px; font-size: 10px; font-weight: 600; background: #f0f0f0; border: 1px solid #ccc; cursor: pointer;
-        }
-        .cloud-status:hover { background: #e2e2e2; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #ca5010; display: inline-block; }
-        .status-dot.connected { background: #107c41; box-shadow: 0 0 6px #107c41; }
-        .status-dot.syncing { background: #ca5010; animation: blink 1s infinite; }
-        .status-dot.offline { background: #d13438; }
+        .btn-row { display: flex; gap: 8px; margin-top: 8px; }
+        .action-btn { flex: 1; padding: 10px; border: none; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; color: white; text-align: center; }
+        .btn-start { background: #107c41; }
+        .btn-stop { background: #d13438; }
+        .btn-save { background: var(--win-blue); width: 100%; padding: 12px; font-size: 14px; margin-top: 10px; }
 
-        @keyframes blink { 50% { opacity: 0.4; } }
+        .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12px; margin-top: 6px; background: #fdfdfd; padding: 8px; border: 1px solid #eee; border-radius: 4px; }
+        .checkbox-row { display: flex; align-items: center; gap: 6px; cursor: pointer; }
 
-        table.dialyse-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11px; }
-        table.dialyse-table th, table.dialyse-table td { border-bottom: 1px solid #eee; padding: 6px; text-align: left; }
-        table.dialyse-table th { background: #f0f0f0; }
-
-        @media print {
-            body { background: white; padding: 0; }
-            .tabs-container, .btn-app, .cloud-container, form, .no-print { display: none !important; }
-            .pos-card { border: none; box-shadow: none; padding: 0; }
-        }
+        table.dialyse-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 12px; background: #fff; }
+        table.dialyse-table th, table.dialyse-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        table.dialyse-table th { background: var(--win-blue); color: white; }
     </style>
 </head>
 <body>
 
-    <div class="dialyse-layout">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <div class="tabs-container" style="margin-bottom: 0; border: none; padding: 0;">
-                <button class="tab-btn active" onclick="wisselTab('invoerTab', this)">📝 Nieuwe Sessie</button>
-                <button class="tab-btn" onclick="wisselTab('planningTab', this)">📅 Planning & Afspraken</button>
-                <button class="tab-btn" onclick="wisselTab('historieTab', this)">📋 Historie Lijst</button>
+    <div class="header">
+        <span>☁️ Dialyse Monitor (JSONBin)</span>
+        <div class="header-btns">
+            <button type="button" class="top-btn" onclick="toggleFullscreen()">⛶ Volledig Scherm</button>
+            <button type="button" class="top-btn" onclick="laadDataVanBin()">🔄 Sync</button>
+        </div>
+    </div>
+
+    <!-- TABBALK -->
+    <div class="tab-bar">
+        <button type="button" class="tab-btn active" id="btn-invoer" onclick="wisselTab('invoerTab', 'btn-invoer')">📝 Sessie</button>
+        <button type="button" class="tab-btn" id="btn-planning" onclick="wisselTab('planningTab', 'btn-planning')">📅 Planning</button>
+        <button type="button" class="tab-btn" id="btn-historie" onclick="wisselTab('historieTab', 'btn-historie')">📊 Historie</button>
+    </div>
+
+    <!-- TAB 1: INVOER & STOPWATCH -->
+    <div id="invoerTab" class="tab-content active">
+        <div class="card">
+            <div class="section-title">⏱️ Tijden & Stopwatch</div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Aansluit Tijd</label>
+                    <input type="datetime-local" id="aansluitTijd">
+                </div>
+                <div class="form-group">
+                    <label>Afsluiten Tijd</label>
+                    <input type="datetime-local" id="afsluitTijd">
+                </div>
             </div>
 
-            <div class="cloud-container">
-                <button class="btn-app" style="padding: 4px 8px; font-size: 10px;" onclick="laadDialyseVanServer()">🔄 Sync Nu</button>
-                <div class="cloud-status" onclick="laadDialyseVanServer()" title="Klik om handmatig te synchroniseren">
-                    <span id="cloudDot" class="status-dot syncing"></span>
-                    <span id="cloudTxt">Verbinden...</span>
-                </div>
+            <div class="btn-row">
+                <button type="button" class="action-btn btn-start" onclick="startKlok()">▶️ START</button>
+                <button type="button" class="action-btn btn-stop" onclick="stopKlok()">⏹️ STOP</button>
+            </div>
+
+            <div class="timer-box" id="timerBoxContainer">
+                <div style="position: relative; z-index: 2; font-size: 9px; color: #fff; text-transform: uppercase;">Voortgang (Rood ➔ Groen)</div>
+                <div class="timer-display" id="liveTimer">00:00:00</div>
             </div>
         </div>
 
-        <!-- TAB 1: INVOER -->
-        <div id="invoerTab" class="tab-content active">
-            <div class="pos-card">
-                <div class="section-header">
-                    <span id="formulierTitel">🩺 NIEUWE DIALYSESESSIE REGISTREREN</span>
-                    <span id="bewerkModeIndicator" style="font-size: 11px; color: #ca5010; display: none;">(Bewerken van planning)</span>
+        <div class="card">
+            <div class="section-title">⚖️ Gewichten & UF</div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Drooggewicht (kg)</label>
+                    <input type="number" step="0.1" id="dryWeight" value="109.0" oninput="berekenUF(); slaConfigOpBin();">
                 </div>
-                
-                <input type="hidden" id="bewerkPlanId" value="">
+                <div class="form-group">
+                    <label>Pre-Gewicht (kg)</label>
+                    <input type="number" step="0.1" id="preWeight" placeholder="Bijv. 112.5" oninput="berekenUF()">
+                </div>
+            </div>
 
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Afspraak Datum & Tijd</label>
-                        <input type="datetime-local" id="afspraakTijd">
-                    </div>
-                    <div class="form-group">
-                        <label>Aankomst Datum & Tijd</label>
-                        <input type="datetime-local" id="aankomstTijd">
-                    </div>
-                    <div class="form-group">
-                        <label>Stop Datum & Tijd</label>
-                        <input type="datetime-local" id="stopTijd">
-                    </div>
-                    <div class="form-group">
-                        <label>Type Dialyse</label>
-                        <select id="typeDialyse">
-                            <option value="Nachtdialyse (+0.3 kg)">Nachtdialyse (+0.3 kg)</option>
-                            <option value="Dagdialyse">Dagdialyse</option>
-                        </select>
-                    </div>
+            <div class="result-box">
+                <div>
+                    <div style="font-size: 10px; color: #666;">UF-ADVIES (PRE - DROOG + 0.3):</div>
+                    <div style="font-size: 16px; font-weight: bold;"><span id="ufResultTxt">0.0</span> kg</div>
                 </div>
+                <div id="ufBadge" class="uf-badge" style="background: #107c41;">Groen</div>
+            </div>
 
-                <!-- GEWICHTEN EN DROOGGEWICHT INSTELLING -->
-                <div class="form-grid" style="margin-top: 8px;">
-                    <div class="form-group">
-                        <label style="color: #0067c0; font-weight: bold;">⚖️ Drooggewicht (kg)</label>
-                        <input type="number" step="0.1" id="dryWeight" value="109.0" oninput="berekenUF()" onchange="updateDroogGewicht()" style="border-color: #0067c0; font-weight: bold; background: #f0f7ff;">
-                    </div>
-                    <div class="form-group">
-                        <label>Pre-Gewicht (kg)</label>
-                        <input type="number" step="0.1" id="preWeight" placeholder="Bijv. 112.5" oninput="berekenUF()">
-                    </div>
-                    <div class="form-group">
-                        <label>Post-Gewicht (kg)</label>
-                        <input type="number" step="0.1" id="postWeight" placeholder="Bijv. 108.5">
-                    </div>
-                </div>
-
-                <div class="result-box">
-                    <div>
-                        <div style="font-size: 10px; color: #666;">BEREKENDE UF-ADVIES (PRE - DROOG + 0.3):</div>
-                        <div style="font-size: 18px; font-weight: bold;"><span id="ufResultTxt">0.0</span> kg</div>
-                    </div>
-                    <div id="ufBadge" class="uf-badge" style="background: #107c41;">Groen (Veilig)</div>
-                </div>
-
-                <div class="form-grid" style="margin-top: 8px;">
-                    <div class="form-group">
-                        <label>Ingestelde UF (kg)</label>
-                        <input type="number" step="0.1" id="ingesteldeUf" placeholder="Bijv. 3.8">
-                    </div>
-                    <div class="form-group">
-                        <label>Verschil UF (Pre - Post)</label>
-                        <input type="number" step="0.1" id="verschilUf" placeholder="0.0">
-                    </div>
-                </div>
-
-                <div style="margin-top: 10px; font-size: 11px; font-weight: 600; color: #0067c0;">MEDICATIE & TOEVOEGINGEN</div>
-                <div class="checkbox-row">
-                    <label><input type="checkbox" id="fragmin2500"> Fragmin 2500</label>
-                    <label><input type="checkbox" id="fragmin5000"> Fragmin 5000</label>
-                    <label><input type="checkbox" id="epo"> EPO</label>
-                    <label><input type="checkbox" id="lazer"> Lazer</label>
-                </div>
-
-                <div class="form-grid" style="margin-top: 8px;">
-                    <div class="form-group">
-                        <label>Bloodflow (ml/min)</label>
-                        <input type="number" id="bloodflow" placeholder="Bijv. 200">
-                    </div>
-                    <div class="form-group">
-                        <label>Bloeddruk (bijv. 130/80)</label>
-                        <input type="text" id="bloeddruk" placeholder="130/80">
-                    </div>
-                </div>
-
-                <div class="form-grid" style="margin-top: 8px;">
-                    <div class="form-group">
-                        <label>Verpleging</label>
-                        <select id="verpleging">
-                            <option value="Jan">Jan</option>
-                            <option value="Piet">Piet</option>
-                            <option value="Klaas">Klaas</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Notities / Vochtlijn</label>
-                        <input type="text" id="notities" placeholder="Bijv. moe, kramp...">
-                    </div>
-                </div>
-
-                <div style="margin-top: 12px;">
-                    <button class="btn-app btn-success" style="width: 100%; padding: 10px; font-size: 13px;" onclick="slaDialyseSessieOp()">✅ SESSIE OPSLAAN & SYNC</button>
-                </div>
+            <div class="form-group" style="margin-top: 8px;">
+                <label>Ingestelde UF (kg)</label>
+                <input type="number" step="0.1" id="ingesteldeUf" placeholder="Bijv. 3.8">
             </div>
         </div>
 
-        <!-- TAB 2: PLANNING -->
-        <div id="planningTab" class="tab-content">
-            <div class="pos-card" style="margin-bottom: 12px;">
-                <div class="section-header">➕ Herhaalde Afspraak Plannen</div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Start Datum & Tijd</label>
-                        <input type="datetime-local" id="planStartTijd">
-                    </div>
-                    <div class="form-group">
-                        <label>Type Dialyse</label>
-                        <select id="planType">
-                            <option value="Nachtdialyse (+0.3 kg)">Nachtdialyse (+0.3 kg)</option>
-                            <option value="Dagdialyse">Dagdialyse</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Herhaling</label>
-                        <select id="planHerhaling" onchange="toggleEindDatumVeld()">
-                            <option value="geen">Geen (Eenmalig)</option>
-                            <option value="elkedag">Elke dag</option>
-                            <option value="omdedag">Om de dag</option>
-                            <option value="mawovrij">Ma, Wo, Vrij</option>
-                            <option value="didoza">Di, Do, Za</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="eindDatumGroep" style="display: none;">
-                        <label>Tot Eind Datum</label>
-                        <input type="date" id="planEindDatum">
-                    </div>
-                </div>
-                <div style="margin-top: 10px; text-align: right;">
-                    <button class="btn-app btn-success" onclick="genereerPlanning()">📅 Planning Genereren & Opslaan</button>
-                </div>
+        <div class="card">
+            <div class="section-title">💊 Medicatie & Bloeddruk</div>
+            <div class="checkbox-grid">
+                <label class="checkbox-row"><input type="checkbox" id="f2500"> Fragmin 2500</label>
+                <label class="checkbox-row"><input type="checkbox" id="f5000"> Fragmin 5000</label>
+                <label class="checkbox-row"><input type="checkbox" id="epo"> EPO</label>
+                <label class="checkbox-row"><input type="checkbox" id="ijzer"> IJzer</label>
             </div>
+            <div class="form-group" style="margin-top: 8px;">
+                <label>Bloeddruk & Hartslag</label>
+                <input type="text" id="bloeddruk" placeholder="130/80 - 72">
+            </div>
+            <button type="button" class="action-btn btn-save" onclick="slaSessieNaarBin()">💾 SESSIE OPSLAAN IN CLOUD</button>
+        </div>
+    </div>
 
-            <div class="pos-card">
-                <div class="section-header">
-                    <span>📋 Overzicht Geplande Afspraken (Vandaag bovenaan)</span>
-                    <button class="btn-app" style="padding: 4px 10px; font-size: 10px;" onclick="genereerPDF()">🖨️ Professionele PDF</button>
+    <!-- TAB 2: PLANNING -->
+    <div id="planningTab" class="tab-content">
+        <div class="card">
+            <div class="section-title">📅 Planning Aanmaken</div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Start Datum</label>
+                    <input type="date" id="planStart">
                 </div>
-                <div style="max-height: 250px; overflow-y: auto;">
-                    <table class="dialyse-table">
-                        <thead>
-                            <tr>
-                                <th>Datum / Tijd</th>
-                                <th>Type</th>
-                                <th>Herhaling</th>
-                                <th>Acties</th>
-                            </tr>
-                        </thead>
-                        <tbody id="planningTabelBody">
-                            <tr><td colspan="4" style="color: #888;">Geen geplande afspraken.</td></tr>
-                        </tbody>
-                    </table>
+                <div class="form-group">
+                    <label>Eind Datum</label>
+                    <input type="date" id="planEind">
                 </div>
             </div>
+            <div class="form-group" style="margin-top: 6px;">
+                <label>Herhaling</label>
+                <select id="planHerhaling">
+                    <option value="omdedag">Om de dag</option>
+                    <option value="elkedag">Elke dag</option>
+                </select>
+            </div>
+            <button type="button" class="action-btn btn-save" onclick="genereerEnSlaPlanning()">📅 Genereer & Opslaan in Cloud</button>
         </div>
 
-        <!-- TAB 3: HISTORIE LIJST -->
-        <div id="historieTab" class="tab-content">
-            <div class="pos-card">
-                <div class="section-header">📋 Overzicht Eerdere Dialysesessies</div>
-                <div style="max-height: 300px; overflow-y: auto;">
-                    <table class="dialyse-table">
-                        <thead>
-                            <tr>
-                                <th>Start / Stop</th>
-                                <th>Type</th>
-                                <th>Pre</th>
-                                <th>UF-Advies</th>
-                                <th>Status</th>
-                                <th>Actie</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dialyseTabelBody">
-                            <tr><td colspan="6" style="color: #888;">Gegevens laden...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="card">
+            <div class="section-title">📋 Gedeelde Planning</div>
+            <table class="dialyse-table">
+                <thead>
+                    <tr>
+                        <th>Datum / Tijd</th>
+                        <th>Type</th>
+                        <th>Herhaling</th>
+                    </tr>
+                </thead>
+                <tbody id="planningTabelBody">
+                    <tr><td colspan="3" style="color: #888;">Gegevens laden...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 3: HISTORIE -->
+    <div id="historieTab" class="tab-content">
+        <div class="card">
+            <div class="section-title">📊 Gedeelde Historie</div>
+            <table class="dialyse-table">
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Pre / Droog</th>
+                        <th>UF</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="historieTabelBody">
+                    <tr><td colspan="4" style="color: #888;">Gegevens laden...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
     <script>
-        const JSONBIN_BIN_ID = '6acd10cdac6210605a2b2502';
-        const JSONBIN_API_KEY = '$2a$10$AAsaI9LebId4BAj60iBn3.V/Y3ayfLpT5qI5vhouztfHHUpgmuQdG';
+        // ==========================================
+        // VUL HIER JOUW JSONBIN GEGEVENS IN:
+        // ==========================================
+        const JSONBIN_ID = "JOUW_BIN_ID_HIER";
+        const API_KEY = "JOUW_MASTER_KEY_HIER";
+        // ==========================================
 
-        let dialyseData = {
-            dryWeight: 109.0,
-            sessies: [],
-            planning: []
-        };
+        let timerInterval = null;
+        let stopwatchStart = null;
+        let centraleData = { dryWeight: 109.0, planning: [], historie: [] };
 
-        window.onload = function() {
+        window.addEventListener('DOMContentLoaded', () => {
             let nu = new Date();
             let offsetMs = nu.getTimezoneOffset() * 60000;
-            let lokaalIso = new Date(nu.getTime() - offsetMs).toISOString().slice(0, 16);
+            document.getElementById('aansluitTijd').value = new Date(nu.getTime() - offsetMs).toISOString().slice(0, 16);
+            document.getElementById('planStart').value = nu.toISOString().split('T')[0];
 
-            document.getElementById('afspraakTijd').value = lokaalIso;
-            document.getElementById('aankomstTijd').value = lokaalIso;
-            document.getElementById('stopTijd').value = lokaalIso;
-            document.getElementById('planStartTijd').value = lokaalIso;
+            let ochtend = new Date(nu);
+            ochtend.setDate(ochtend.getDate() + 1);
+            ochtend.setHours(5, 30, 0, 0);
+            document.getElementById('afsluitTijd').value = new Date(ochtend.getTime() - offsetMs).toISOString().slice(0, 16);
 
-            laadDialyseVanServer();
-            setInterval(laadDialyseVanServerStil, 10000);
-        };
+            laadDataVanBin();
+        });
 
-        function updateCloudVerklikker(status, tekst) {
-            let dot = document.getElementById('cloudDot');
-            let txt = document.getElementById('cloudTxt');
-            if(!dot || !txt) return;
+        function laadDataVanBin() {
+            if (JSONBIN_ID.includes("JOUW_")) {
+                alert("Vergeet niet je JSONBin ID en API Key in de HTML code in te vullen!");
+                return;
+            }
 
-            dot.className = 'status-dot ' + status;
-            txt.textContent = tekst;
+            fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
+                headers: { 'X-Master-Key': API_KEY }
+            })
+            .then(res => res.json())
+            .then(data => {
+                centraleData = data.record || centraleData;
+                if (centraleData.dryWeight) {
+                    document.getElementById('dryWeight').value = centraleData.dryWeight;
+                    berekenUF();
+                }
+                vulPlanningTabel(centraleData.planning);
+                vulHistorieTabel(centraleData.historie);
+            })
+            .catch(err => console.error("Fout bij laden van JSONBin:", err));
         }
 
-        function wisselTab(tabId, btnEl) {
+        function slaGeheleDataNaarBin() {
+            fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': API_KEY
+                },
+                body: JSON.stringify(centraleData)
+            })
+            .then(res => res.json())
+            .catch(err => alert("Fout bij opslaan in cloud: " + err));
+        }
+
+        function slaConfigOpBin() {
+            centraleData.dryWeight = parseFloat(document.getElementById('dryWeight').value) || 109.0;
+            slaGeheleDataNaarBin();
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => {});
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        function wisselTab(tabId, btnId) {
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(tb => tb.classList.remove('active'));
-
             document.getElementById(tabId).classList.add('active');
-            btnEl.classList.add('active');
+            document.getElementById(btnId).classList.add('active');
         }
 
-        function toggleEindDatumVeld() {
-            let val = document.getElementById('planHerhaling').value;
-            document.getElementById('eindDatumGroep').style.display = (val === 'geen') ? 'none' : 'flex';
+        function startKlok() {
+            let nu = new Date();
+            let offsetMs = nu.getTimezoneOffset() * 60000;
+            document.getElementById('aansluitTijd').value = new Date(nu.getTime() - offsetMs).toISOString().slice(0, 16);
+            stopwatchStart = new Date();
+
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateStopwatch, 1000);
+        }
+
+        function updateStopwatch() {
+            if (!stopwatchStart) return;
+            let nu = new Date();
+            let afsluitVal = document.getElementById('afsluitTijd').value;
+            let timerEl = document.getElementById('liveTimer');
+            let boxEl = document.getElementById('timerBoxContainer');
+
+            let diffMs = nu - stopwatchStart;
+            if (diffMs < 0) diffMs = 0;
+
+            let u = Math.floor(diffMs / (1000 * 60 * 60));
+            let m = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            let s = Math.floor((diffMs % (1000 * 60)) / 1000);
+            
+            timerEl.innerText = `${String(u).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+            if (afsluitVal) {
+                let afsluitMoment = new Date(afsluitVal);
+                let totaalTijd = afsluitMoment - stopwatchStart;
+                let verstrekenTijd = nu - stopwatchStart;
+
+                if (totaalTijd > 0) {
+                    let voortgang = verstrekenTijd / totaalTijd;
+                    if (voortgang > 1) voortgang = 1;
+                    if (voortgang < 0) voortgang = 0;
+
+                    let r = Math.round(211 + (16 - 211) * voortgang);
+                    let g = Math.round(47 + (124 - 47) * voortgang);
+                    let b = Math.round(47 + (65 - 47) * voortgang);
+                    boxEl.style.background = `rgb(${r}, ${g}, ${b})`;
+                }
+            }
+        }
+
+        function stopKlok() {
+            if (timerInterval) clearInterval(timerInterval);
+            let nu = new Date();
+            let offsetMs = nu.getTimezoneOffset() * 60000;
+            document.getElementById('afsluitTijd').value = new Date(nu.getTime() - offsetMs).toISOString().slice(0, 16);
+            alert('Gestopt.');
         }
 
         function berekenUF() {
@@ -335,348 +352,101 @@
             if (isNaN(preWeight)) {
                 ufResTxt.textContent = '0.0';
                 ufBadge.style.background = '#107c41';
-                ufBadge.textContent = 'Groen (Veilig)';
-                return;
-            }
-
-            // BEREKENING: PRE - DROOG + 0.3
-            let uf = preWeight - dryWeight + 0.3;
-            uf = Math.round(uf * 10) / 10;
-            ufResTxt.textContent = uf;
-
-            if (uf >= 4.5) {
-                ufBadge.style.background = '#d13438';
-                ufBadge.textContent = 'Rood (Hoog)';
-            } else if (uf >= 4.0) {
-                ufBadge.style.background = '#ca5010';
-                ufBadge.textContent = 'Oranje (Let op)';
-            } else {
-                ufBadge.style.background = '#107c41';
-                ufBadge.textContent = 'Groen (Veilig)';
-            }
-        }
-
-        /* --- NIEUW: DIRECT DROOGGEWICHT OPSLAAN BIJ WIJZIGEN --- */
-        function updateDroogGewicht() {
-            let nieuwGewicht = parseFloat(document.getElementById('dryWeight').value);
-            if (!isNaN(nieuwGewicht) && nieuwGewicht > 0) {
-                dialyseData.dryWeight = nieuwGewicht;
-                berekenUF();
-                slaDialyseNaarServer();
-            }
-        }
-
-        function laadDialyseVanServer() {
-            updateCloudVerklikker('syncing', 'Laden...');
-            fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-                headers: { 'X-Master-Key': JSONBIN_API_KEY },
-                cache: 'no-store'
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data && data.record) {
-                    dialyseData.sessies = data.record.dialyseSessies || [];
-                    dialyseData.planning = data.record.dialysePlanning || [];
-                    
-                    // Alleen bijwerken als de gebruiker niet actief in het veld staat te typen
-                    if (document.activeElement !== document.getElementById('dryWeight')) {
-                        if (data.record.dryWeight) {
-                            dialyseData.dryWeight = data.record.dryWeight;
-                            document.getElementById('dryWeight').value = data.record.dryWeight;
-                        }
-                    }
-                }
-                updateDialyseTabel();
-                updatePlanningTabel();
-                berekenUF();
-                updateCloudVerklikker('connected', 'Verbonden');
-            })
-            .catch(err => {
-                console.log("Laden mislukt, lokaal proberen:", err);
-                let lokaalSessies = localStorage.getItem('dialyse_sessies_uitgebreid');
-                let lokaalPlan = localStorage.getItem('dialyse_planning');
-                let lokaalDry = localStorage.getItem('dialyse_dryweight');
-                if (lokaalSessies) dialyseData.sessies = JSON.parse(lokaalSessies);
-                if (lokaalPlan) dialyseData.planning = JSON.parse(lokaalPlan);
-                if (lokaalDry) {
-                    dialyseData.dryWeight = parseFloat(lokaalDry);
-                    document.getElementById('dryWeight').value = lokaalDry;
-                }
-                updateDialyseTabel();
-                updatePlanningTabel();
-                berekenUF();
-                updateCloudVerklikker('offline', 'Offline');
-            });
-        }
-
-        function laadDialyseVanServerStil() {
-            fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-                headers: { 'X-Master-Key': JSONBIN_API_KEY },
-                cache: 'no-store'
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data && data.record) {
-                    dialyseData.sessies = data.record.dialyseSessies || [];
-                    dialyseData.planning = data.record.dialysePlanning || [];
-                    
-                    if (document.activeElement !== document.getElementById('dryWeight')) {
-                        if (data.record.dryWeight) {
-                            dialyseData.dryWeight = data.record.dryWeight;
-                            document.getElementById('dryWeight').value = data.record.dryWeight;
-                        }
-                    }
-                    updateDialyseTabel();
-                    updatePlanningTabel();
-                    berekenUF();
-                    updateCloudVerklikker('connected', 'Verbonden');
-                }
-            })
-            .catch(err => {
-                console.log("Stille achtergrond sync mislukt");
-            });
-        }
-
-        function slaDialyseNaarServer() {
-            updateCloudVerklikker('syncing', 'Opslaan...');
-            
-            let actueelDroog = parseFloat(document.getElementById('dryWeight').value) || 109.0;
-            dialyseData.dryWeight = actueelDroog;
-
-            localStorage.setItem('dialyse_sessies_uitgebreid', JSON.stringify(dialyseData.sessies));
-            localStorage.setItem('dialyse_planning', JSON.stringify(dialyseData.planning));
-            localStorage.setItem('dialyse_dryweight', actueelDroog);
-
-            let payload = {
-                dryWeight: actueelDroog,
-                dialyseSessies: dialyseData.sessies,
-                dialysePlanning: dialyseData.planning
-            };
-
-            fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': JSONBIN_API_KEY
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(res => {
-                if (!res.ok) throw new Error('HTTP error ' + res.status);
-                return res.json();
-            })
-            .then(data => {
-                console.log("Opgeslagen in Bin:", data);
-                updateCloudVerklikker('connected', 'Verbonden');
-            })
-            .catch(err => {
-                console.error("Sync fout:", err);
-                updateCloudVerklikker('offline', 'Sync Fout');
-            });
-        }
-
-        function genereerPlanning() {
-            let startTijdVal = document.getElementById('planStartTijd').value;
-            let type = document.getElementById('planType').value;
-            let herhaling = document.getElementById('planHerhaling').value;
-            let eindDatumVal = document.getElementById('planEindDatum').value;
-
-            if(!startTijdVal) {
-                alert('Kies een startdatum en tijd.');
-                return;
-            }
-
-            let d = new Date(startTijdVal);
-            let eindDatum = eindDatumVal ? new Date(eindDatumVal + 'T23:59:59') : new Date(d);
-
-            if(herhaling !== 'geen' && !eindDatumVal) {
-                alert('Kies een einddatum voor de herhaling.');
-                return;
-            }
-
-            let teller = 0;
-            while(d <= eindDatum && teller < 100) {
-                let dagVanWeek = d.getDay();
-                let toevoegen = false;
-
-                if (herhaling === 'geen') {
-                    toevoegen = true;
-                } else if (herhaling === 'elkedag' || herhaling === 'omdedag') {
-                    toevoegen = true;
-                } else if (herhaling === 'mawovrij' && (dagVanWeek === 1 || dagVanWeek === 3 || dagVanWeek === 5)) {
-                    toevoegen = true;
-                } else if (herhaling === 'didoza' && (dagVanWeek === 2 || dagVanWeek === 4 || dagVanWeek === 6)) {
-                    toevoegen = true;
-                }
-
-                if(toevoegen) {
-                    let offsetMs = d.getTimezoneOffset() * 60000;
-                    let isoStr = new Date(d.getTime() - offsetMs).toISOString().slice(0, 16);
-                    
-                    dialyseData.planning.push({
-                        id: Date.now() + Math.random(),
-                        datumTijd: isoStr,
-                        type: type,
-                        herhalingLabel: herhaling
-                    });
-                }
-
-                if (herhaling === 'geen') break;
-                if (herhaling === 'omdedag') {
-                    d.setDate(d.getDate() + 2);
-                } else {
-                    d.setDate(d.getDate() + 1);
-                }
-                teller++;
-            }
-
-            slaDialyseNaarServer();
-            updatePlanningTabel();
-            alert('Planning gegenereerd en naar de cloud verzonden!');
-        }
-
-        function bewerkPlanning(id) {
-            let planItem = dialyseData.planning.find(p => p.id === id);
-            if(!planItem) return;
-
-            document.getElementById('afspraakTijd').value = planItem.datumTijd;
-            document.getElementById('aankomstTijd').value = planItem.datumTijd;
-            document.getElementById('stopTijd').value = planItem.datumTijd;
-            document.getElementById('typeDialyse').value = planItem.type;
-            
-            document.getElementById('bewerkPlanId').value = planItem.id;
-            document.getElementById('bewerkModeIndicator').style.display = 'inline';
-            document.getElementById('formulierTitel').textContent = '📝 BESTAANDE PLANNING AANVULLEN';
-
-            let invoerBtn = document.querySelector('.tabs-container button:first-child');
-            wisselTab('invoerTab', invoerBtn);
-        }
-
-        function verwijderPlanItem(id) {
-            dialyseData.planning = dialyseData.planning.filter(p => p.id !== id);
-            slaDialyseNaarServer();
-            updatePlanningTabel();
-        }
-
-        function updatePlanningTabel() {
-            let tbody = document.getElementById('planningTabelBody');
-            if (!tbody) return;
-
-            tbody.innerHTML = '';
-            if (!dialyseData.planning || dialyseData.planning.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="color: #888;">Geen geplande afspraken.</td></tr>';
-                return;
-            }
-
-            let gesorteerd = dialyseData.planning.slice().sort((a,b) => a.datumTijd.localeCompare(b.datumTijd));
-
-            gesorteerd.forEach(p => {
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><b>${p.datumTijd.replace('T', ' ')}</b></td>
-                    <td>${p.type}</td>
-                    <td><span style="background:#0067c0; color:white; padding:2px 6px; border-radius:4px; font-size:10px;">${p.herhalingLabel}</span></td>
-                    <td>
-                        <button class="btn-app btn-warning" style="padding:2px 6px; font-size:10px;" onclick="bewerkPlanning(${p.id})">Bewerken</button>
-                        <button class="btn-app btn-danger" style="padding:2px 6px; font-size:10px;" onclick="verwijderPlanItem(${p.id})">Wis</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function slaDialyseSessieOp() {
-            let preWeight = parseFloat(document.getElementById('preWeight').value);
-            let dryWeight = parseFloat(document.getElementById('dryWeight').value) || 109.0;
-
-            if (isNaN(preWeight)) {
-                alert('Vul ten minste een geldig pre-gewicht in.');
+                ufBadge.textContent = 'Groen';
                 return;
             }
 
             let uf = Math.round((preWeight - dryWeight + 0.3) * 10) / 10;
-            let status = 'Groen (Veilig)';
-            let badgeColor = '#107c41';
+            ufResTxt.textContent = uf;
 
             if (uf >= 4.5) {
-                status = 'Rood (Hoog)';
-                badgeColor = '#d13438';
+                ufBadge.style.background = '#d13438';
+                ufBadge.textContent = 'Rood';
             } else if (uf >= 4.0) {
-                status = 'Oranje (Let op)';
-                badgeColor = '#ca5010';
+                ufBadge.style.background = '#ca5010';
+                ufBadge.textContent = 'Oranje';
+            } else {
+                ufBadge.style.background = '#107c41';
+                ufBadge.textContent = 'Groen';
             }
-
-            let bewerkId = document.getElementById('bewerkPlanId').value;
-
-            let sessieData = {
-                id: bewerkId ? parseFloat(bewerkId) : Date.now(),
-                afspraak: document.getElementById('afspraakTijd').value,
-                aankomst: document.getElementById('aankomstTijd').value,
-                stop: document.getElementById('stopTijd').value,
-                type: document.getElementById('typeDialyse').value,
-                preWeight: preWeight,
-                dryWeight: dryWeight,
-                postWeight: parseFloat(document.getElementById('postWeight').value) || 0,
-                uf: uf,
-                ingesteldeUf: document.getElementById('ingesteldeUf').value,
-                bloeddruk: document.getElementById('bloeddruk').value,
-                verpleging: document.getElementById('verpleging').value,
-                notities: document.getElementById('notities').value,
-                status: status,
-                badgeColor: badgeColor
-            };
-
-            if (bewerkId) {
-                dialyseData.sessies = dialyseData.sessies.filter(s => s.id !== parseFloat(bewerkId));
-                dialyseData.planning = dialyseData.planning.filter(p => p.id !== parseFloat(bewerkId));
-            }
-
-            dialyseData.sessies.push(sessieData);
-            slaDialyseNaarServer();
-            updateDialyseTabel();
-            updatePlanningTabel();
-
-            document.getElementById('bewerkPlanId').value = '';
-            document.getElementById('bewerkModeIndicator').style.display = 'none';
-            document.getElementById('formulierTitel').textContent = '🩺 NIEUWE DIALYSESESSIE REGISTREREN';
-
-            alert('Sessie opgeslagen en naar de cloud gestuurd!');
         }
 
-        function verwijderSessie(id) {
-            dialyseData.sessies = dialyseData.sessies.filter(s => s.id !== id);
-            slaDialyseNaarServer();
-            updateDialyseTabel();
+        function genereerEnSlaPlanning() {
+            let startStr = document.getElementById('planStart').value;
+            let eindStr = document.getElementById('planEind').value;
+            let herhaling = document.getElementById('planHerhaling').value;
+
+            if (!startStr || !eindStr) { alert('Vul datums in.'); return; }
+
+            let d = new Date(startStr + 'T22:30:00');
+            let eindD = new Date(eindStr + 'T23:59:59');
+            let lijst = [];
+
+            while (d <= eindD) {
+                let y = d.getFullYear();
+                let m = String(d.getMonth() + 1).padStart(2, '0');
+                let dt = String(d.getDate()).padStart(2, '0');
+                lijst.push({
+                    DatumTijd: `${y}-${m}-${dt} 22:30`,
+                    Type: 'Nachtdialyse (+0.3 kg)',
+                    Herhaling: herhaling
+                });
+
+                if (herhaling === 'omdedag') d.setDate(d.getDate() + 2);
+                else d.setDate(d.getDate() + 1);
+            }
+
+            centraleData.planning = lijst;
+            slaGeheleDataNaarBin();
+            vulPlanningTabel(lijst);
+            alert('Planning opgeslagen in JSONBin!');
         }
 
-        function updateDialyseTabel() {
-            let tbody = document.getElementById('dialyseTabelBody');
-            if (!tbody) return;
-
+        function vulPlanningTabel(planning) {
+            let tbody = document.getElementById('planningTabelBody');
             tbody.innerHTML = '';
-            if (dialyseData.sessies.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="color: #888;">Nog geen dialysesessies opgeslagen.</td></tr>';
+            if (!planning || planning.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="color: #888;">Geen planning gevonden.</td></tr>';
                 return;
             }
-
-            let gesorteerd = dialyseData.sessies.slice().sort((a,b) => b.aankomst.localeCompare(a.aankomst));
-
-            gesorteerd.forEach(s => {
+            planning.forEach(p => {
                 let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${s.aankomst ? s.aankomst.replace('T', ' ') : '-'}</td>
-                    <td>${s.type}</td>
-                    <td><b>${s.preWeight} kg</b></td>
-                    <td><b>${s.uf} kg</b></td>
-                    <td><span style="background:${s.badgeColor}; color:white; padding:2px 6px; border-radius:4px; font-size:10px;">${s.status}</span></td>
-                    <td><button class="btn-app btn-danger" style="padding:2px 6px; font-size:10px;" onclick="verwijderSessie(${s.id})">Wis</button></td>
-                `;
+                tr.innerHTML = `<td><b>${p.DatumTijd}</b></td><td>${p.Type}</td><td>${p.Herhaling}</td>`;
                 tbody.appendChild(tr);
             });
         }
 
-        function genereerPDF() {
-            window.print();
+        function slaSessieNaarBin() {
+            let pre = document.getElementById('preWeight').value;
+            if (!pre) { alert('Vul pre-gewicht in.'); return; }
+
+            let sessie = {
+                Datum: new Date().toLocaleString(),
+                Pre: pre,
+                Droog: document.getElementById('dryWeight').value,
+                UF: document.getElementById('ufResultTxt').innerText,
+                Status: document.getElementById('ufBadge').innerText
+            };
+
+            if (!centraleData.historie) centraleData.historie = [];
+            centraleData.historie.unshift(sessie);
+            slaGeheleDataNaarBin();
+            vulHistorieTabel(centraleData.historie);
+            alert('Sessie opgeslagen in JSONBin!');
+        }
+
+        function vulHistorieTabel(historie) {
+            let tbody = document.getElementById('historieTabelBody');
+            tbody.innerHTML = '';
+            if (!historie || historie.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="color: #888;">Geen historie aanwezig.</td></tr>';
+                return;
+            }
+            historie.forEach(h => {
+                let tr = document.createElement('tr');
+                tr.innerHTML = `<td>${h.Datum}</td><td>${h.Pre} / ${h.Droog}</td><td>${h.UF} kg</td><td><b>${h.Status}</b></td>`;
+                tbody.appendChild(tr);
+            });
         }
     </script>
 </body>
