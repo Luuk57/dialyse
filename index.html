@@ -60,6 +60,11 @@
         .btn-edit { background: #0078d7; }
         .btn-del { background: #d13438; }
 
+        /* MULTI-SELECT VERPLEGER DROPDOWN STYLING */
+        .verpleger-box { border: 1px solid #ccc; border-radius: 4px; background: #fff; padding: 6px; max-height: 110px; overflow-y: auto; }
+        .verpleger-item { display: flex; align-items: center; justify-content: space-between; font-size: 12px; padding: 3px 0; border-bottom: 1px solid #f0f0f0; }
+        .verpleger-item label { display: flex; align-items: center; gap: 6px; cursor: pointer; flex: 1; }
+
         .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12px; margin-top: 6px; background: #fdfdfd; padding: 8px; border: 1px solid #eee; border-radius: 4px; }
         .checkbox-row { display: flex; align-items: center; gap: 6px; cursor: pointer; }
 
@@ -153,6 +158,19 @@
         </div>
 
         <div class="card">
+            <div class="section-title">👩‍⚕️ Verplegers (Meerdere selecteerbaar)</div>
+            <div class="form-group">
+                <div class="verpleger-box" id="verplegerCheckboxes">
+                    <!-- Dynamisch geladen verplegers vinken -->
+                </div>
+            </div>
+            <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <input type="text" id="nieuweVerplegerNaam" placeholder="Nieuwe naam..." style="flex:1; padding:6px; font-size:12px; border:1px solid #ccc; border-radius:4px;">
+                <button type="button" class="btn-small btn-edit" id="voegVerplegerToeBtn" style="padding: 6px 10px;">+ Toevoegen</button>
+            </div>
+        </div>
+
+        <div class="card">
             <div class="section-title">💊 Medicatie & Bloeddruk</div>
             <div class="checkbox-grid">
                 <label class="checkbox-row"><input type="checkbox" id="f2500"> Fragmin 2500</label>
@@ -225,12 +243,13 @@
                         <th>Datum</th>
                         <th>Pre / Droog</th>
                         <th>UF</th>
+                        <th>Verpleger(s)</th>
                         <th>Status</th>
                         <th style="width: 110px;">Acties</th>
                     </tr>
                 </thead>
                 <tbody id="historieTabelBody">
-                    <tr><td colspan="5" style="color: #888;">Gegevens laden...</td></tr>
+                    <tr><td colspan="6" style="color: #888;">Gegevens laden...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -242,7 +261,7 @@
 
         let timerInterval = null;
         let stopwatchStart = null;
-        let centraleData = { dryWeight: 121.0, planning: [], historie: [] };
+        let centraleData = { dryWeight: 121.0, planning: [], historie: [], verplegers: ["Jan", "Sophie", "Mark"] };
 
         window.addEventListener('DOMContentLoaded', () => {
             let nu = new Date();
@@ -258,6 +277,7 @@
             document.getElementById('btnSync').addEventListener('click', laadDataVanBin);
             document.getElementById('btnFullscreen').addEventListener('click', toggleFullscreen);
             document.getElementById('btnPdf').addEventListener('click', genereerProPDF);
+            document.getElementById('voegVerplegerToeBtn').addEventListener('click', voegVerplegerToe);
             
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => wisselTab(e.target.dataset.target, e.target.id));
@@ -285,9 +305,12 @@
             .then(data => {
                 centraleData = data.record || centraleData;
                 if (!centraleData.dryWeight) centraleData.dryWeight = 121.0;
+                if (!centraleData.verplegers) centraleData.verplegers = ["Jan", "Sophie", "Mark"];
+                
                 document.getElementById('dryWeight').value = centraleData.dryWeight;
                 berekenUF();
                 
+                vulVerplegersLijst();
                 vulPlanningTabel(centraleData.planning);
                 vulHistorieTabel(centraleData.historie);
                 controleerEnVulHuidigeSessie(centraleData.planning);
@@ -311,6 +334,53 @@
         function slaConfigOpBin() {
             centraleData.dryWeight = parseFloat(document.getElementById('dryWeight').value) || 121.0;
             slaGeheleDataNaarBin();
+        }
+
+        function vulVerplegersLijst() {
+            let container = document.getElementById('verplegerCheckboxes');
+            container.innerHTML = '';
+            if (!centraleData.verplegers || centraleData.verplegers.length === 0) {
+                container.innerHTML = '<div style="font-size:11px; color:#888; padding:4px;">Geen verplegers toegevoegd.</div>';
+                return;
+            }
+            centraleData.verplegers.forEach((naam, index) => {
+                let div = document.createElement('div');
+                div.className = 'verpleger-item';
+                div.innerHTML = `
+                    <label><input type="checkbox" class="verpleger-chk" value="${naam}"> ${naam}</label>
+                    <button type="button" class="btn-small btn-del" onclick="verwijderVerpleger(${index})" style="padding:2px 5px; font-size:10px;">Wis</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function voegVerplegerToe() {
+            let input = document.getElementById('nieuweVerplegerNaam');
+            let naam = input.value.trim();
+            if (!naam) return;
+            if (!centraleData.verplegers) centraleData.verplegers = [];
+            if (centraleData.verplegers.includes(naam)) { alert('Deze naam bestaat al.'); return; }
+
+            centraleData.verplegers.push(naam);
+            input.value = '';
+            slaGeheleDataNaarBin();
+            vulVerplegersLijst();
+        }
+
+        window.verwijderVerpleger = function(index) {
+            let naam = centraleData.verplegers[index];
+            if (confirm(`Weet je zeker dat je ${naam} wilt verwijderen?`)) {
+                centraleData.verplegers.splice(index, 1);
+                slaGeheleDataNaarBin();
+                vulVerplegersLijst();
+            }
+        };
+
+        function getGeselecteerdeVerplegers() {
+            let chks = document.querySelectorAll('.verpleger-chk:checked');
+            let namen = [];
+            chks.forEach(c => namen.push(c.value));
+            return namen.length > 0 ? namen.join(', ') : '-';
         }
 
         function toggleFullscreen() {
@@ -499,7 +569,7 @@
                 let aansluitDate = new Date(dtClean);
                 aansluitDate.setHours(5);
                 aansluitDate.setMinutes(30);
-                aansluitDate.setDate(aansluitDate.getDate() + 1); // Volgende ochtend 05:30
+                aansluitDate.setDate(aansluitDate.getDate() + 1);
                 
                 let offsetMs = aansluitDate.getTimezoneOffset() * 60000;
                 let afsluitIso = new Date(aansluitDate.getTime() - offsetMs).toISOString().slice(0, 16);
@@ -519,6 +589,7 @@
                 Pre: pre,
                 Droog: document.getElementById('dryWeight').value,
                 UF: document.getElementById('ufResultTxt').innerText,
+                Verplegers: getGeselecteerdeVerplegers(),
                 Status: document.getElementById('ufBadge').innerText
             };
 
@@ -554,7 +625,7 @@
             let tbody = document.getElementById('historieTabelBody');
             tbody.innerHTML = '';
             if (!historie || historie.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="color: #888;">Geen historie aanwezig.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="color: #888;">Geen historie aanwezig.</td></tr>';
                 return;
             }
             historie.forEach((h, index) => {
@@ -563,6 +634,7 @@
                     <td>${h.Datum}</td>
                     <td><input type="number" step="0.1" id="hist_pre_${index}" value="${h.Pre}" style="width:65px; padding:2px;"> / ${h.Droog}</td>
                     <td>${h.UF} kg</td>
+                    <td>${h.Verplegers || '-'}</td>
                     <td><b>${h.Status}</b></td>
                     <td>
                         <button type="button" class="btn-small btn-edit" onclick="bewerkHistorie(${index})">Bewerk</button>
