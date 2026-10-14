@@ -1,4 +1,4 @@
-=<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
@@ -42,6 +42,7 @@
         .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; background: #fff; }
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
 
         .result-box { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 4px; background: #eef6fc; border-left: 4px solid var(--win-blue); margin-top: 8px; }
         .uf-badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; font-size: 11px; }
@@ -71,8 +72,8 @@
         .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12px; margin-top: 6px; background: #fdfdfd; padding: 8px; border: 1px solid #eee; border-radius: 4px; }
         .checkbox-row { display: flex; align-items: center; gap: 6px; cursor: pointer; }
 
-        table.dialyse-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 12px; background: #fff; }
-        table.dialyse-table th, table.dialyse-table td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: middle; }
+        table.dialyse-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 11px; background: #fff; }
+        table.dialyse-table th, table.dialyse-table td { border: 1px solid #ddd; padding: 6px; text-align: left; vertical-align: middle; }
         table.dialyse-table th { background: var(--win-blue); color: white; }
 
         /* PRINT / PDF STYLING */
@@ -135,14 +136,18 @@
 
         <div class="card">
             <div class="section-title">⚖️ Gewichten & UF</div>
-            <div class="grid-2">
+            <div class="grid-3">
                 <div class="form-group">
-                    <label>Drooggewicht (kg)</label>
+                    <label>Droog (kg)</label>
                     <input type="number" step="0.1" id="dryWeight" value="121.0">
                 </div>
                 <div class="form-group">
-                    <label>Pre-Gewicht (kg)</label>
-                    <input type="number" step="0.1" id="preWeight" placeholder="Bijv. 124.5">
+                    <label>Pre (kg)</label>
+                    <input type="number" step="0.1" id="preWeight" placeholder="Pre">
+                </div>
+                <div class="form-group">
+                    <label>Post (kg)</label>
+                    <input type="number" step="0.1" id="postWeight" placeholder="Post">
                 </div>
             </div>
 
@@ -168,9 +173,7 @@
                         <span id="dropdownSelectedText">Selecteer verpleger(s)...</span> ▾
                     </button>
                     <div class="dropdown-content" id="dropdownContentBox">
-                        <div id="verplegerCheckboxes">
-                            <!-- Dynamische items -->
-                        </div>
+                        <div id="verplegerCheckboxes"></div>
                         <div style="padding: 6px; border-top: 1px solid #ddd; display: flex; gap: 4px; background: #fafafa;">
                             <input type="text" id="nieuweVerplegerNaam" placeholder="Nieuwe naam..." style="flex:1; padding:4px; font-size:11px; border:1px solid #ccc; border-radius:3px;">
                             <button type="button" class="btn-small btn-edit" id="voegVerplegerToeBtn">+ Toevoegen</button>
@@ -251,7 +254,7 @@
                 <thead>
                     <tr>
                         <th>Datum</th>
-                        <th>Pre / Droog</th>
+                        <th>Pre/Post/Droog</th>
                         <th>UF</th>
                         <th>Verpleger(s)</th>
                         <th>Status</th>
@@ -283,7 +286,6 @@
             ochtend.setHours(5, 30, 0, 0);
             document.getElementById('afsluitTijd').value = new Date(ochtend.getTime() - offsetMs).toISOString().slice(0, 16);
 
-            // Dropdown open/sluit logica
             let dropdownBtn = document.getElementById('dropdownToggleBtn');
             let dropdownContent = document.getElementById('dropdownContentBox');
             dropdownBtn.addEventListener('click', (e) => {
@@ -295,7 +297,6 @@
             });
             dropdownContent.addEventListener('click', (e) => e.stopPropagation());
 
-            // Event Listeners koppelen
             document.getElementById('btnSync').addEventListener('click', laadDataVanBin);
             document.getElementById('btnFullscreen').addEventListener('click', toggleFullscreen);
             document.getElementById('btnPdf').addEventListener('click', genereerProPDF);
@@ -622,6 +623,7 @@
             let sessie = {
                 Datum: new Date().toLocaleString(),
                 Pre: pre,
+                Post: document.getElementById('postWeight').value || '-',
                 Droog: document.getElementById('dryWeight').value,
                 UF: document.getElementById('ufResultTxt').innerText,
                 Verplegers: getGeselecteerdeVerplegers(),
@@ -637,11 +639,13 @@
 
         window.bewerkHistorie = function(index) {
             let nieuwePre = document.getElementById(`hist_pre_${index}`).value;
+            let nieuwePost = document.getElementById(`hist_post_${index}`).value;
             if (!nieuwePre) return;
             let dry = parseFloat(centraleData.historie[index].Droog) || 121.0;
             let nieuweUF = Math.round((parseFloat(nieuwePre) - dry + 0.3) * 10) / 10;
             
             centraleData.historie[index].Pre = nieuwePre;
+            centraleData.historie[index].Post = nieuwePost;
             centraleData.historie[index].UF = nieuweUF;
             slaGeheleDataNaarBin();
             vulHistorieTabel(centraleData.historie);
@@ -664,10 +668,15 @@
                 return;
             }
             historie.forEach((h, index) => {
+                let postVal = h.Post !== undefined ? h.Post : '-';
                 let tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${h.Datum}</td>
-                    <td><input type="number" step="0.1" id="hist_pre_${index}" value="${h.Pre}" style="width:65px; padding:2px;"> / ${h.Droog}</td>
+                    <td>
+                        <input type="number" step="0.1" id="hist_pre_${index}" value="${h.Pre}" style="width:45px; padding:2px;" title="Pre"> / 
+                        <input type="number" step="0.1" id="hist_post_${index}" value="${postVal}" style="width:45px; padding:2px;" title="Post"> / 
+                        ${h.Droog}
+                    </td>
                     <td>${h.UF} kg</td>
                     <td>${h.Verplegers || '-'}</td>
                     <td><b>${h.Status}</b></td>
