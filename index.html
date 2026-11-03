@@ -8,7 +8,7 @@
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 15px; background-color: #f4f6f9; color: #333; }
     .card { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: 0 auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     h2 { margin-top: 0; color: #1a73e8; }
-    .form-group { margin-bottom: 15px; }
+    .form-group { margin-bottom: 15px; position: relative; }
     label { display: block; font-weight: bold; margin-bottom: 5px; }
     input[type="text"], input[type="number"], input[type="datetime-local"], select, textarea {
       width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 15px;
@@ -23,17 +23,28 @@
     .checkbox-group input { width: 18px; height: 18px; }
     .fragmin-boxes { display: flex; gap: 12px; align-items: center; margin-top: 5px; }
     .fragmin-boxes input { width: 20px; height: 20px; cursor: pointer; }
-    
-    /* Stijlen voor dynamische verpleging lijst */
-    .nurse-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #fafafa; }
-    .nurse-item { display: flex; align-items: center; justify-content: space-between; }
-    .nurse-item label { margin-bottom: 0; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+
+    /* Custom Dropdown met Checkboxes */
+    .dropdown-btn {
+      width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; background: white;
+      text-align: left; cursor: pointer; font-size: 15px; display: flex; justify-content: space-between; align-items: center;
+      box-sizing: border-box;
+    }
+    .dropdown-btn::after { content: '▼'; font-size: 12px; color: #666; }
+    .dropdown-content {
+      display: none; position: absolute; width: 100%; background: white; border: 1px solid #ccc;
+      border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); z-index: 1000; margin-top: 4px; padding: 10px;
+      box-sizing: border-box; max-height: 220px; overflow-y: auto;
+    }
+    .dropdown-content.show { display: block; }
+    .nurse-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; }
+    .nurse-item label { margin-bottom: 0; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 8px; flex: 1; }
     .nurse-item input[type="checkbox"] { width: 18px; height: 18px; }
     .delete-nurse-btn { background: #ff4d4d; color: white; border: none; padding: 2px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; }
     .delete-nurse-btn:hover { background: #cc0000; }
-    .add-nurse-container { display: flex; gap: 8px; }
-    .add-nurse-container input { flex: 1; }
-    .add-nurse-container button { width: auto; padding: 0 15px; background-color: #34a853; }
+    .add-nurse-container { display: flex; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 2px solid #ddd; }
+    .add-nurse-container input { flex: 1; padding: 6px; font-size: 14px; }
+    .add-nurse-container button { width: auto; padding: 6px 12px; background-color: #34a853; font-size: 14px; }
     .add-nurse-container button:hover { background-color: #2d8e47; }
 
     button { background-color: #1a73e8; color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
@@ -142,14 +153,16 @@
       </div>
     </div>
 
-    <!-- Verpleging met meervoudige selectie, toevoegen en verwijderen -->
+    <!-- Dropdown met selectievakjes voor verpleging -->
     <div class="form-group">
-      <label>Verpleging (selecteer één of meer)</label>
-      <div id="nurseList" class="nurse-list"></div>
-      
-      <div class="add-nurse-container">
-        <input type="text" id="newNurseName" placeholder="Nieuwe naam verplegende...">
-        <button type="button" onclick="addNurse()">Voeg toe</button>
+      <label>Verpleging</label>
+      <div class="dropdown-btn" id="dropdownBtn" onclick="toggleDropdown(event)">Selecteer verplegende...</div>
+      <div class="dropdown-content" id="dropdownContent" onclick="event.stopPropagation();">
+        <div id="nurseList"></div>
+        <div class="add-nurse-container">
+          <input type="text" id="newNurseName" placeholder="Nieuwe naam...">
+          <button type="button" onclick="addNurse()">Voeg toe</button>
+        </div>
       </div>
     </div>
 
@@ -165,23 +178,35 @@
 <script>
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5TB9vLcJ-xeZT6co9MS7b83DBlBJutT_rAH927kK4gbiGNEDyJFtOgPwnY4b3runKJQ/exec";
 
-  // Standaard verplegenden als er nog geen in localStorage staan
   let nurses = ["Sandra", "Hilda"];
 
   window.onload = function() {
-    // Drooggewicht laden uit geheugen
     var savedDryWeight = localStorage.getItem('droogGewicht');
     if (savedDryWeight) {
       document.getElementById('droogGewicht').value = savedDryWeight;
     }
 
-    // Verplegenden laden uit geheugen
     var savedNurses = localStorage.getItem('nurseList');
     if (savedNurses) {
       nurses = JSON.parse(savedNurses);
     }
     renderNurseList();
   };
+
+  // Sluit dropdown bij klikken buiten de selector
+  window.onclick = function(e) {
+    if (!e.target.matches('#dropdownBtn')) {
+      var dropdown = document.getElementById('dropdownContent');
+      if (dropdown.classList.contains('show')) {
+        dropdown.classList.remove('show');
+      }
+    }
+  };
+
+  function toggleDropdown(e) {
+    e.stopPropagation();
+    document.getElementById('dropdownContent').classList.toggle('show');
+  }
 
   function updateDryWeight() {
     var val = document.getElementById('droogGewicht').value;
@@ -190,7 +215,6 @@
     }
   }
 
-  // Bouw de lijst met verplegenden op het scherm
   function renderNurseList() {
     const listContainer = document.getElementById('nurseList');
     listContainer.innerHTML = '';
@@ -200,13 +224,24 @@
       item.className = 'nurse-item';
       item.innerHTML = `
         <label>
-          <input type="checkbox" class="nurse-checkbox" value="${nurse}">
+          <input type="checkbox" class="nurse-checkbox" value="${nurse}" onchange="updateSelectedText()">
           ${nurse}
         </label>
         <button type="button" class="delete-nurse-btn" onclick="removeNurse(${index})">✕</button>
       `;
       listContainer.appendChild(item);
     });
+    updateSelectedText();
+  }
+
+  function updateSelectedText() {
+    const selected = Array.from(document.querySelectorAll('.nurse-checkbox:checked')).map(cb => cb.value);
+    const btn = document.getElementById('dropdownBtn');
+    if (selected.length === 0) {
+      btn.innerText = "Selecteer verplegende...";
+    } else {
+      btn.innerText = selected.join(', ');
+    }
   }
 
   function addNurse() {
@@ -277,7 +312,6 @@
     var countFragmin2500 = [1,2,3,4].filter(i => document.getElementById('f2500_' + i).checked).length;
     var countFragmin5000 = [1,2,3,4].filter(i => document.getElementById('f5000_' + i).checked).length;
 
-    // Verzamel geselecteerde verplegenden (gescheiden door komma's)
     var selectedNurses = Array.from(document.querySelectorAll('.nurse-checkbox:checked'))
                               .map(cb => cb.value)
                               .join(', ');
@@ -314,7 +348,7 @@
       document.getElementById('dialyseForm').reset();
       document.getElementById('droogGewicht').value = currentDry;
       document.getElementById('ufBadge').style.display = 'none';
-      renderNurseList(); // Reset vinkjes van verpleging
+      renderNurseList();
     })
     .catch(err => {
       alert("Er ging iets mis bij het opslaan.");
