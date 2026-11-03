@@ -18,7 +18,7 @@
 
     .form-group { margin-bottom: 15px; position: relative; }
     label { display: block; font-weight: bold; margin-bottom: 5px; }
-    input[type="text"], input[type="number"], input[type="datetime-local"], select, textarea {
+    input[type="text"], input[type="number"], input[type="time"], input[type="datetime-local"], select, textarea {
       width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 15px;
     }
     .row { display: flex; gap: 10px; }
@@ -90,6 +90,23 @@
   <div id="formTab" class="tab-content active">
     <form id="dialyseForm">
       
+      <!-- NIEUW: AFSPRAAK TYPE EN TIJD BOVENAAN -->
+      <div class="row">
+        <div class="col form-group">
+          <label>Afspraak</label>
+          <select id="afspraakType">
+            <option value="Om de dag">Om de dag</option>
+            <option value="Eenmalig">Eenmalig</option>
+            <option value="Ma wo vrij">Ma wo vrij</option>
+            <option value="Di do za">Di do za</option>
+          </select>
+        </div>
+        <div class="col form-group">
+          <label>Afspraak Tijd</label>
+          <input type="time" id="afspraakTijd" value="22:30">
+        </div>
+      </div>
+
       <div class="row">
         <div class="col form-group">
           <label>Droog gewicht (kg)</label>
@@ -378,6 +395,8 @@
     var entry = {
       id: Date.now(),
       datum: new Date().toLocaleString('nl-NL'),
+      afspraakType: document.getElementById('afspraakType').value,
+      afspraakTijd: document.getElementById('afspraakTijd').value,
       droogGewicht: document.getElementById('droogGewicht').value,
       soortDialyse: document.getElementById('soortDialyse').value,
       afspraakStart: document.getElementById('afspraakStart').value,
@@ -411,6 +430,7 @@
       var currentDry = document.getElementById('droogGewicht').value;
       document.getElementById('dialyseForm').reset();
       document.getElementById('droogGewicht').value = currentDry;
+      document.getElementById('afspraakTijd').value = '22:30'; // Standaard 22:30 herstellen
       document.getElementById('ufBadge').style.display = 'none';
       renderNurseList();
     })
@@ -438,7 +458,7 @@
       card.innerHTML = `
         <div class="history-header">
           <span>${entry.afspraakStart ? entry.afspraakStart.replace('T', ' ') : entry.datum}</span>
-          <span>${entry.soortDialyse || ''}</span>
+          <span>${entry.afspraakType || ''} (${entry.afspraakTijd || '22:30'}) - ${entry.soortDialyse || ''}</span>
         </div>
         <div>
           <strong>Pre / Post Gewicht:</strong> ${entry.preGewicht || '-'} kg / ${entry.postGewicht || '-'} kg<br>
@@ -459,6 +479,8 @@
 
   function editEntry(index) {
     const entry = localEntries[index];
+    document.getElementById('afspraakType').value = entry.afspraakType || 'Om de dag';
+    document.getElementById('afspraakTijd').value = entry.afspraakTijd || '22:30';
     document.getElementById('droogGewicht').value = entry.droogGewicht || 121;
     document.getElementById('soortDialyse').value = entry.soortDialyse || 'Nacht (0,3)';
     document.getElementById('afspraakStart').value = entry.afspraakStart || '';
@@ -497,16 +519,20 @@
         
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
           <tr>
+            <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; font-weight: bold;">Afspraak:</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${item.afspraakType || 'Om de dag'} om ${item.afspraakTijd || '22:30'}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; font-weight: bold;">Soort Dialyse:</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${item.soortDialyse}</td>
+          </tr>
+          <tr>
             <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; font-weight: bold;">Afspraak Start:</td>
             <td style="padding: 8px; border: 1px solid #ddd;">${item.afspraakStart ? item.afspraakStart.replace('T', ' ') : '-'}</td>
             <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; font-weight: bold;">Afspraak Stop:</td>
             <td style="padding: 8px; border: 1px solid #ddd;">${item.afspraakStop ? item.afspraakStop.replace('T', ' ') : '-'}</td>
           </tr>
           <tr>
-            <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; font-weight: bold;">Soort Dialyse:</td>
-            <td style="padding: 8px; border: 1px solid #ddd;">${item.soortDialyse}</td>
             <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; font-weight: bold;">Drooggewicht:</td>
-            <td style="padding: 8px; border: 1px solid #ddd;">${item.droogGewicht} kg</td>
+            <td style="padding: 8px; border: 1px solid #ddd;" colspan="3">${item.droogGewicht} kg</td>
           </tr>
         </table>
 
