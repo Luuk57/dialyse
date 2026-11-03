@@ -23,6 +23,19 @@
     .checkbox-group input { width: 18px; height: 18px; }
     .fragmin-boxes { display: flex; gap: 12px; align-items: center; margin-top: 5px; }
     .fragmin-boxes input { width: 20px; height: 20px; cursor: pointer; }
+    
+    /* Stijlen voor dynamische verpleging lijst */
+    .nurse-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #fafafa; }
+    .nurse-item { display: flex; align-items: center; justify-content: space-between; }
+    .nurse-item label { margin-bottom: 0; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .nurse-item input[type="checkbox"] { width: 18px; height: 18px; }
+    .delete-nurse-btn { background: #ff4d4d; color: white; border: none; padding: 2px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; }
+    .delete-nurse-btn:hover { background: #cc0000; }
+    .add-nurse-container { display: flex; gap: 8px; }
+    .add-nurse-container input { flex: 1; }
+    .add-nurse-container button { width: auto; padding: 0 15px; background-color: #34a853; }
+    .add-nurse-container button:hover { background-color: #2d8e47; }
+
     button { background-color: #1a73e8; color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
     button:hover { background-color: #1557b0; }
     button:disabled { background-color: #ccc; }
@@ -129,13 +142,15 @@
       </div>
     </div>
 
+    <!-- Verpleging met meervoudige selectie, toevoegen en verwijderen -->
     <div class="form-group">
-      <label>Verpleging</label>
-      <select id="verpleging">
-        <option value="">Selecteer verplegende...</option>
-        <option value="Sandra">Sandra</option>
-        <option value="Hilda">Hilda</option>
-      </select>
+      <label>Verpleging (selecteer één of meer)</label>
+      <div id="nurseList" class="nurse-list"></div>
+      
+      <div class="add-nurse-container">
+        <input type="text" id="newNurseName" placeholder="Nieuwe naam verplegende...">
+        <button type="button" onclick="addNurse()">Voeg toe</button>
+      </div>
     </div>
 
     <div class="form-group">
@@ -150,11 +165,22 @@
 <script>
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5TB9vLcJ-xeZT6co9MS7b83DBlBJutT_rAH927kK4gbiGNEDyJFtOgPwnY4b3runKJQ/exec";
 
+  // Standaard verplegenden als er nog geen in localStorage staan
+  let nurses = ["Sandra", "Hilda"];
+
   window.onload = function() {
+    // Drooggewicht laden uit geheugen
     var savedDryWeight = localStorage.getItem('droogGewicht');
     if (savedDryWeight) {
       document.getElementById('droogGewicht').value = savedDryWeight;
     }
+
+    // Verplegenden laden uit geheugen
+    var savedNurses = localStorage.getItem('nurseList');
+    if (savedNurses) {
+      nurses = JSON.parse(savedNurses);
+    }
+    renderNurseList();
   };
 
   function updateDryWeight() {
@@ -162,6 +188,42 @@
     if (val) {
       localStorage.setItem('droogGewicht', val);
     }
+  }
+
+  // Bouw de lijst met verplegenden op het scherm
+  function renderNurseList() {
+    const listContainer = document.getElementById('nurseList');
+    listContainer.innerHTML = '';
+    
+    nurses.forEach((nurse, index) => {
+      const item = document.createElement('div');
+      item.className = 'nurse-item';
+      item.innerHTML = `
+        <label>
+          <input type="checkbox" class="nurse-checkbox" value="${nurse}">
+          ${nurse}
+        </label>
+        <button type="button" class="delete-nurse-btn" onclick="removeNurse(${index})">✕</button>
+      `;
+      listContainer.appendChild(item);
+    });
+  }
+
+  function addNurse() {
+    const input = document.getElementById('newNurseName');
+    const name = input.value.trim();
+    if (name && !nurses.includes(name)) {
+      nurses.push(name);
+      localStorage.setItem('nurseList', JSON.stringify(nurses));
+      renderNurseList();
+      input.value = '';
+    }
+  }
+
+  function removeNurse(index) {
+    nurses.splice(index, 1);
+    localStorage.setItem('nurseList', JSON.stringify(nurses));
+    renderNurseList();
   }
 
   function calculateUF() {
@@ -194,7 +256,6 @@
     }
   }
 
-  // Berekening Werkelijke UF: Pregewicht - Postgewicht
   function calculateActualUF() {
     var pre = parseFloat(document.getElementById('preGewicht').value);
     var post = parseFloat(document.getElementById('postGewicht').value);
@@ -216,6 +277,11 @@
     var countFragmin2500 = [1,2,3,4].filter(i => document.getElementById('f2500_' + i).checked).length;
     var countFragmin5000 = [1,2,3,4].filter(i => document.getElementById('f5000_' + i).checked).length;
 
+    // Verzamel geselecteerde verplegenden (gescheiden door komma's)
+    var selectedNurses = Array.from(document.querySelectorAll('.nurse-checkbox:checked'))
+                              .map(cb => cb.value)
+                              .join(', ');
+
     var data = {
       droogGewicht: document.getElementById('droogGewicht').value,
       soortDialyse: document.getElementById('soortDialyse').value,
@@ -232,7 +298,7 @@
       ijzer: document.getElementById('ijzer').checked,
       shuntflow: document.getElementById('shuntflow').checked,
       shuntflowResultaat: document.getElementById('shuntflowResultaat').value,
-      verpleging: document.getElementById('verpleging').value,
+      verpleging: selectedNurses,
       verslag: document.getElementById('verslag').value
     };
 
@@ -248,6 +314,7 @@
       document.getElementById('dialyseForm').reset();
       document.getElementById('droogGewicht').value = currentDry;
       document.getElementById('ufBadge').style.display = 'none';
+      renderNurseList(); // Reset vinkjes van verpleging
     })
     .catch(err => {
       alert("Er ging iets mis bij het opslaan.");
