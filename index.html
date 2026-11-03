@@ -62,11 +62,11 @@
     <div class="row">
       <div class="col form-group">
         <label>Pregewicht (kg)</label>
-        <input type="number" step="0.1" id="preGewicht" oninput="calculateUF()">
+        <input type="number" step="0.1" id="preGewicht" oninput="calculateUF(); calculateActualUF();">
       </div>
       <div class="col form-group">
         <label>Postgewicht (kg)</label>
-        <input type="number" step="0.1" id="postGewicht">
+        <input type="number" step="0.1" id="postGewicht" oninput="calculateActualUF();">
       </div>
     </div>
 
@@ -82,8 +82,8 @@
         <input type="number" step="0.1" id="ingesteldUf">
       </div>
       <div class="col form-group">
-        <label>Werkelijke UF</label>
-        <input type="number" step="0.1" id="werkelijkeUf">
+        <label>Werkelijke UF (berekend)</label>
+        <input type="number" step="0.1" id="werkelijkeUf" readonly>
       </div>
     </div>
 
@@ -150,7 +150,6 @@
 <script>
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5TB9vLcJ-xeZT6co9MS7b83DBlBJutT_rAH927kK4gbiGNEDyJFtOgPwnY4b3runKJQ/exec";
 
-  // Bij het laden van de pagina: geladen drooggewicht ophalen uit opslag
   window.onload = function() {
     var savedDryWeight = localStorage.getItem('droogGewicht');
     if (savedDryWeight) {
@@ -170,7 +169,6 @@
     var dry = parseFloat(document.getElementById('droogGewicht').value);
     var dialyseType = document.getElementById('soortDialyse').value;
     
-    // Offset afhankelijk van Dag (0.6) of Nacht (0.3)
     var offset = dialyseType.includes('0,6') ? 0.6 : 0.3;
 
     if (!isNaN(pre) && !isNaN(dry)) {
@@ -196,12 +194,25 @@
     }
   }
 
+  // Berekening Werkelijke UF: Pregewicht - Postgewicht
+  function calculateActualUF() {
+    var pre = parseFloat(document.getElementById('preGewicht').value);
+    var post = parseFloat(document.getElementById('postGewicht').value);
+    
+    if (!isNaN(pre) && !isNaN(post)) {
+      var actualUF = pre - post;
+      actualUF = Math.round(actualUF * 10) / 10;
+      document.getElementById('werkelijkeUf').value = actualUF;
+    } else {
+      document.getElementById('werkelijkeUf').value = '';
+    }
+  }
+
   function submitForm() {
     var btn = document.getElementById('submitBtn');
     btn.disabled = true;
     btn.innerText = "Bezig met opslaan...";
 
-    // Aantal aangevinkte vakjes tellen voor Fragmin
     var countFragmin2500 = [1,2,3,4].filter(i => document.getElementById('f2500_' + i).checked).length;
     var countFragmin5000 = [1,2,3,4].filter(i => document.getElementById('f5000_' + i).checked).length;
 
@@ -235,7 +246,7 @@
       alert("Gegevens succesvol verzonden!");
       var currentDry = document.getElementById('droogGewicht').value;
       document.getElementById('dialyseForm').reset();
-      document.getElementById('droogGewicht').value = currentDry; // Behoud drooggewicht na reset
+      document.getElementById('droogGewicht').value = currentDry;
       document.getElementById('ufBadge').style.display = 'none';
     })
     .catch(err => {
