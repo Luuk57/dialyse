@@ -21,6 +21,8 @@
     .bg-red { background-color: #c62828; }
     .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
     .checkbox-group input { width: 18px; height: 18px; }
+    .fragmin-boxes { display: flex; gap: 12px; align-items: center; margin-top: 5px; }
+    .fragmin-boxes input { width: 20px; height: 20px; cursor: pointer; }
     button { background-color: #1a73e8; color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
     button:hover { background-color: #1557b0; }
     button:disabled { background-color: #ccc; }
@@ -35,11 +37,14 @@
     <div class="row">
       <div class="col form-group">
         <label>Droog gewicht (kg)</label>
-        <input type="number" step="0.1" id="droogGewicht" value="109" oninput="calculateUF()">
+        <input type="number" step="0.1" id="droogGewicht" value="121" oninput="updateDryWeight(); calculateUF();">
       </div>
       <div class="col form-group">
         <label>Soort dialyse</label>
-        <input type="text" id="soortDialyse" value="0,3 0/5">
+        <select id="soortDialyse" onchange="calculateUF()">
+          <option value="Nacht (0,3)">Nacht (0,3)</option>
+          <option value="Dag (0,6)">Dag (0,6)</option>
+        </select>
       </div>
     </div>
 
@@ -84,14 +89,23 @@
 
     <hr>
 
-    <div class="row">
-      <div class="col form-group">
-        <label>Fragmin 2500</label>
-        <input type="number" id="fragmin2500" value="0">
+    <div class="form-group">
+      <label>Fragmin 2500</label>
+      <div class="fragmin-boxes">
+        <input type="checkbox" id="f2500_1">
+        <input type="checkbox" id="f2500_2">
+        <input type="checkbox" id="f2500_3">
+        <input type="checkbox" id="f2500_4">
       </div>
-      <div class="col form-group">
-        <label>Fragmin 5000</label>
-        <input type="number" id="fragmin5000" value="0">
+    </div>
+
+    <div class="form-group">
+      <label>Fragmin 5000</label>
+      <div class="fragmin-boxes">
+        <input type="checkbox" id="f5000_1">
+        <input type="checkbox" id="f5000_2">
+        <input type="checkbox" id="f5000_3">
+        <input type="checkbox" id="f5000_4">
       </div>
     </div>
 
@@ -136,12 +150,31 @@
 <script>
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5TB9vLcJ-xeZT6co9MS7b83DBlBJutT_rAH927kK4gbiGNEDyJFtOgPwnY4b3runKJQ/exec";
 
+  // Bij het laden van de pagina: geladen drooggewicht ophalen uit opslag
+  window.onload = function() {
+    var savedDryWeight = localStorage.getItem('droogGewicht');
+    if (savedDryWeight) {
+      document.getElementById('droogGewicht').value = savedDryWeight;
+    }
+  };
+
+  function updateDryWeight() {
+    var val = document.getElementById('droogGewicht').value;
+    if (val) {
+      localStorage.setItem('droogGewicht', val);
+    }
+  }
+
   function calculateUF() {
     var pre = parseFloat(document.getElementById('preGewicht').value);
     var dry = parseFloat(document.getElementById('droogGewicht').value);
+    var dialyseType = document.getElementById('soortDialyse').value;
     
+    // Offset afhankelijk van Dag (0.6) of Nacht (0.3)
+    var offset = dialyseType.includes('0,6') ? 0.6 : 0.3;
+
     if (!isNaN(pre) && !isNaN(dry)) {
-      var uf = pre - dry + 0.3;
+      var uf = pre - dry + offset;
       uf = Math.round(uf * 10) / 10;
       
       var ufField = document.getElementById('ufAdvies');
@@ -168,6 +201,10 @@
     btn.disabled = true;
     btn.innerText = "Bezig met opslaan...";
 
+    // Aantal aangevinkte vakjes tellen voor Fragmin
+    var countFragmin2500 = [1,2,3,4].filter(i => document.getElementById('f2500_' + i).checked).length;
+    var countFragmin5000 = [1,2,3,4].filter(i => document.getElementById('f5000_' + i).checked).length;
+
     var data = {
       droogGewicht: document.getElementById('droogGewicht').value,
       soortDialyse: document.getElementById('soortDialyse').value,
@@ -178,8 +215,8 @@
       ufAdvies: document.getElementById('ufAdvies').value,
       ingesteldUf: document.getElementById('ingesteldUf').value,
       werkelijkeUf: document.getElementById('werkelijkeUf').value,
-      fragmin2500: document.getElementById('fragmin2500').value,
-      fragmin5000: document.getElementById('fragmin5000').value,
+      fragmin2500: countFragmin2500,
+      fragmin5000: countFragmin5000,
       epo: document.getElementById('epo').checked,
       ijzer: document.getElementById('ijzer').checked,
       shuntflow: document.getElementById('shuntflow').checked,
@@ -196,7 +233,9 @@
     })
     .then(() => {
       alert("Gegevens succesvol verzonden!");
+      var currentDry = document.getElementById('droogGewicht').value;
       document.getElementById('dialyseForm').reset();
+      document.getElementById('droogGewicht').value = currentDry; // Behoud drooggewicht na reset
       document.getElementById('ufBadge').style.display = 'none';
     })
     .catch(err => {
