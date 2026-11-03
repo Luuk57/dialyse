@@ -1,365 +1,41 @@
-<!DOCTYPE html>
-<html lang="nl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VOCHT MONITOR - Dialyse Registratie</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 15px; background-color: #f4f6f9; color: #333; }
-    .card { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: 0 auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    h2 { margin-top: 0; color: #1a73e8; }
-    .form-group { margin-bottom: 15px; position: relative; }
-    label { display: block; font-weight: bold; margin-bottom: 5px; }
-    input[type="text"], input[type="number"], input[type="datetime-local"], select, textarea {
-      width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 15px;
-    }
-    .row { display: flex; gap: 10px; }
-    .col { flex: 1; }
-    .uf-badge { padding: 10px; border-radius: 6px; font-weight: bold; text-align: center; color: white; margin-top: 8px; }
-    .bg-green { background-color: #2e7d32; }
-    .bg-orange { background-color: #ef6c00; }
-    .bg-red { background-color: #c62828; }
-    .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-    .checkbox-group input { width: 18px; height: 18px; }
-    .fragmin-boxes { display: flex; gap: 12px; align-items: center; margin-top: 5px; }
-    .fragmin-boxes input { width: 20px; height: 20px; cursor: pointer; }
+function doGet(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Blad1') || SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = sheet.getDataRange().getValues();
+  
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
 
-    /* Custom Dropdown met Checkboxes */
-    .dropdown-btn {
-      width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; background: white;
-      text-align: left; cursor: pointer; font-size: 15px; display: flex; justify-content: space-between; align-items: center;
-      box-sizing: border-box;
-    }
-    .dropdown-btn::after { content: '▼'; font-size: 12px; color: #666; }
-    .dropdown-content {
-      display: none; position: absolute; width: 100%; background: white; border: 1px solid #ccc;
-      border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); z-index: 1000; margin-top: 4px; padding: 10px;
-      box-sizing: border-box; max-height: 220px; overflow-y: auto;
-    }
-    .dropdown-content.show { display: block; }
-    .nurse-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; }
-    .nurse-item label { margin-bottom: 0; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 8px; flex: 1; }
-    .nurse-item input[type="checkbox"] { width: 18px; height: 18px; }
-    .delete-nurse-btn { background: #ff4d4d; color: white; border: none; padding: 2px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; }
-    .delete-nurse-btn:hover { background: #cc0000; }
-    .add-nurse-container { display: flex; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 2px solid #ddd; }
-    .add-nurse-container input { flex: 1; padding: 6px; font-size: 14px; }
-    .add-nurse-container button { width: auto; padding: 6px 12px; background-color: #34a853; font-size: 14px; }
-    .add-nurse-container button:hover { background-color: #2d8e47; }
-
-    button { background-color: #1a73e8; color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
-    button:hover { background-color: #1557b0; }
-    button:disabled { background-color: #ccc; }
-  </style>
-</head>
-<body>
-
-<div class="card">
-  <h2>VOCHT MONITOR</h2>
-  <form id="dialyseForm">
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Blad1') || SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var data = JSON.parse(e.postData.contents);
     
-    <div class="row">
-      <div class="col form-group">
-        <label>Droog gewicht (kg)</label>
-        <input type="number" step="0.1" id="droogGewicht" value="121" oninput="updateDryWeight(); calculateUF();">
-      </div>
-      <div class="col form-group">
-        <label>Soort dialyse</label>
-        <select id="soortDialyse" onchange="calculateUF()">
-          <option value="Nacht (0,3)">Nacht (0,3)</option>
-          <option value="Dag (0,6)">Dag (0,6)</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col form-group">
-        <label>Startdatum / tijd</label>
-        <input type="datetime-local" id="afspraakStart">
-      </div>
-      <div class="col form-group">
-        <label>Stopdatum / tijd</label>
-        <input type="datetime-local" id="afspraakStop">
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col form-group">
-        <label>Pregewicht (kg)</label>
-        <input type="number" step="0.1" id="preGewicht" oninput="calculateUF(); calculateActualUF();">
-      </div>
-      <div class="col form-group">
-        <label>Postgewicht (kg)</label>
-        <input type="number" step="0.1" id="postGewicht" oninput="calculateActualUF();">
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label>UF Advies (berekend)</label>
-      <input type="number" step="0.1" id="ufAdvies" readonly>
-      <div id="ufBadge" class="uf-badge bg-green" style="display:none;">UF Status: Normaal</div>
-    </div>
-
-    <div class="row">
-      <div class="col form-group">
-        <label>Ingesteld UF</label>
-        <input type="number" step="0.1" id="ingesteldUf">
-      </div>
-      <div class="col form-group">
-        <label>Werkelijke UF (berekend)</label>
-        <input type="number" step="0.1" id="werkelijkeUf" readonly>
-      </div>
-    </div>
-
-    <hr>
-
-    <div class="form-group">
-      <label>Fragmin 2500</label>
-      <div class="fragmin-boxes">
-        <input type="checkbox" id="f2500_1">
-        <input type="checkbox" id="f2500_2">
-        <input type="checkbox" id="f2500_3">
-        <input type="checkbox" id="f2500_4">
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label>Fragmin 5000</label>
-      <div class="fragmin-boxes">
-        <input type="checkbox" id="f5000_1">
-        <input type="checkbox" id="f5000_2">
-        <input type="checkbox" id="f5000_3">
-        <input type="checkbox" id="f5000_4">
-      </div>
-    </div>
-
-    <div class="checkbox-group">
-      <input type="checkbox" id="epo"> <label for="epo">Epo</label>
-    </div>
-
-    <div class="checkbox-group">
-      <input type="checkbox" id="ijzer"> <label for="ijzer">IJzer</label>
-    </div>
-
-    <hr>
-
-    <div class="row">
-      <div class="col checkbox-group">
-        <input type="checkbox" id="shuntflow"> <label for="shuntflow">Shuntflow</label>
-      </div>
-      <div class="col form-group">
-        <label>Resultaat</label>
-        <input type="text" id="shuntflowResultaat">
-      </div>
-    </div>
-
-    <!-- Dropdown met selectievakjes voor verpleging -->
-    <div class="form-group">
-      <label>Verpleging</label>
-      <div class="dropdown-btn" id="dropdownBtn" onclick="toggleDropdown(event)">Selecteer verplegende...</div>
-      <div class="dropdown-content" id="dropdownContent" onclick="event.stopPropagation();">
-        <div id="nurseList"></div>
-        <div class="add-nurse-container">
-          <input type="text" id="newNurseName" placeholder="Nieuwe naam...">
-          <button type="button" onclick="addNurse()">Voeg toe</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label>Verslag</label>
-      <textarea id="verslag" rows="4"></textarea>
-    </div>
-
-    <button type="button" id="submitBtn" onclick="submitForm()">Opslaan in Google Sheet</button>
-  </form>
-</div>
-
-<script>
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5TB9vLcJ-xeZT6co9MS7b83DBlBJutT_rAH927kK4gbiGNEDyJFtOgPwnY4b3runKJQ/exec";
-
-  let nurses = ["Sandra", "Hilda"];
-
-  window.onload = function() {
-    var savedDryWeight = localStorage.getItem('droogGewicht');
-    if (savedDryWeight) {
-      document.getElementById('droogGewicht').value = savedDryWeight;
-    }
-
-    var savedNurses = localStorage.getItem('nurseList');
-    if (savedNurses) {
-      nurses = JSON.parse(savedNurses);
-    }
-    renderNurseList();
-  };
-
-  // Sluit dropdown bij klikken buiten de selector
-  window.onclick = function(e) {
-    if (!e.target.matches('#dropdownBtn')) {
-      var dropdown = document.getElementById('dropdownContent');
-      if (dropdown.classList.contains('show')) {
-        dropdown.classList.remove('show');
-      }
-    }
-  };
-
-  function toggleDropdown(e) {
-    e.stopPropagation();
-    document.getElementById('dropdownContent').classList.toggle('show');
-  }
-
-  function updateDryWeight() {
-    var val = document.getElementById('droogGewicht').value;
-    if (val) {
-      localStorage.setItem('droogGewicht', val);
-    }
-  }
-
-  function renderNurseList() {
-    const listContainer = document.getElementById('nurseList');
-    listContainer.innerHTML = '';
+    sheet.appendRow([
+      new Date(),
+      data.droogGewicht,
+      data.afspraakStart,
+      data.afspraakStop,
+      data.soortDialyse,
+      data.preGewicht,
+      data.postGewicht,
+      data.ufAdvies,
+      data.ingesteldUf,
+      data.werkelijkeUf,
+      data.fragmin2500,
+      data.fragmin5000,
+      data.epo ? "Ja" : "Nee",
+      data.ijzer ? "Ja" : "Nee",
+      data.shuntflow ? "Ja" : "Nee",
+      data.shuntflowResultaat,
+      data.verpleging,
+      data.verslag
+    ]);
     
-    nurses.forEach((nurse, index) => {
-      const item = document.createElement('div');
-      item.className = 'nurse-item';
-      item.innerHTML = `
-        <label>
-          <input type="checkbox" class="nurse-checkbox" value="${nurse}" onchange="updateSelectedText()">
-          ${nurse}
-        </label>
-        <button type="button" class="delete-nurse-btn" onclick="removeNurse(${index})">✕</button>
-      `;
-      listContainer.appendChild(item);
-    });
-    updateSelectedText();
+    return ContentService.createTextOutput(JSON.stringify({"result": "success"}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(error) {
+    return ContentService.createTextOutput(JSON.stringify({"result": "error", "error": error.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
   }
-
-  function updateSelectedText() {
-    const selected = Array.from(document.querySelectorAll('.nurse-checkbox:checked')).map(cb => cb.value);
-    const btn = document.getElementById('dropdownBtn');
-    if (selected.length === 0) {
-      btn.innerText = "Selecteer verplegende...";
-    } else {
-      btn.innerText = selected.join(', ');
-    }
-  }
-
-  function addNurse() {
-    const input = document.getElementById('newNurseName');
-    const name = input.value.trim();
-    if (name && !nurses.includes(name)) {
-      nurses.push(name);
-      localStorage.setItem('nurseList', JSON.stringify(nurses));
-      renderNurseList();
-      input.value = '';
-    }
-  }
-
-  function removeNurse(index) {
-    nurses.splice(index, 1);
-    localStorage.setItem('nurseList', JSON.stringify(nurses));
-    renderNurseList();
-  }
-
-  function calculateUF() {
-    var pre = parseFloat(document.getElementById('preGewicht').value);
-    var dry = parseFloat(document.getElementById('droogGewicht').value);
-    var dialyseType = document.getElementById('soortDialyse').value;
-    
-    var offset = dialyseType.includes('0,6') ? 0.6 : 0.3;
-
-    if (!isNaN(pre) && !isNaN(dry)) {
-      var uf = pre - dry + offset;
-      uf = Math.round(uf * 10) / 10;
-      
-      var ufField = document.getElementById('ufAdvies');
-      var ufBadge = document.getElementById('ufBadge');
-      
-      ufField.value = uf;
-      ufBadge.style.display = 'block';
-
-      if (uf >= 4.5) {
-        ufBadge.className = 'uf-badge bg-red';
-        ufBadge.innerText = 'UF Advies: ' + uf + ' (Rood - Hoog)';
-      } else if (uf >= 4.0) {
-        ufBadge.className = 'uf-badge bg-orange';
-        ufBadge.innerText = 'UF Advies: ' + uf + ' (Oranje - Attentie)';
-      } else {
-        ufBadge.className = 'uf-badge bg-green';
-        ufBadge.innerText = 'UF Advies: ' + uf + ' (Groen - Normaal)';
-      }
-    }
-  }
-
-  function calculateActualUF() {
-    var pre = parseFloat(document.getElementById('preGewicht').value);
-    var post = parseFloat(document.getElementById('postGewicht').value);
-    
-    if (!isNaN(pre) && !isNaN(post)) {
-      var actualUF = pre - post;
-      actualUF = Math.round(actualUF * 10) / 10;
-      document.getElementById('werkelijkeUf').value = actualUF;
-    } else {
-      document.getElementById('werkelijkeUf').value = '';
-    }
-  }
-
-  function submitForm() {
-    var btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    btn.innerText = "Bezig met opslaan...";
-
-    var countFragmin2500 = [1,2,3,4].filter(i => document.getElementById('f2500_' + i).checked).length;
-    var countFragmin5000 = [1,2,3,4].filter(i => document.getElementById('f5000_' + i).checked).length;
-
-    var selectedNurses = Array.from(document.querySelectorAll('.nurse-checkbox:checked'))
-                              .map(cb => cb.value)
-                              .join(', ');
-
-    var data = {
-      droogGewicht: document.getElementById('droogGewicht').value,
-      soortDialyse: document.getElementById('soortDialyse').value,
-      afspraakStart: document.getElementById('afspraakStart').value,
-      afspraakStop: document.getElementById('afspraakStop').value,
-      preGewicht: document.getElementById('preGewicht').value,
-      postGewicht: document.getElementById('postGewicht').value,
-      ufAdvies: document.getElementById('ufAdvies').value,
-      ingesteldUf: document.getElementById('ingesteldUf').value,
-      werkelijkeUf: document.getElementById('werkelijkeUf').value,
-      fragmin2500: countFragmin2500,
-      fragmin5000: countFragmin5000,
-      epo: document.getElementById('epo').checked,
-      ijzer: document.getElementById('ijzer').checked,
-      shuntflow: document.getElementById('shuntflow').checked,
-      shuntflowResultaat: document.getElementById('shuntflowResultaat').value,
-      verpleging: selectedNurses,
-      verslag: document.getElementById('verslag').value
-    };
-
-    fetch(GOOGLE_SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(data)
-    })
-    .then(() => {
-      alert("Gegevens succesvol verzonden!");
-      var currentDry = document.getElementById('droogGewicht').value;
-      document.getElementById('dialyseForm').reset();
-      document.getElementById('droogGewicht').value = currentDry;
-      document.getElementById('ufBadge').style.display = 'none';
-      renderNurseList();
-    })
-    .catch(err => {
-      alert("Er ging iets mis bij het opslaan.");
-      console.error(err);
-    })
-    .finally(() => {
-      btn.disabled = false;
-      btn.innerText = "Opslaan in Google Sheet";
-    });
-  }
-</script>
-
-</body>
-</html>
+}
