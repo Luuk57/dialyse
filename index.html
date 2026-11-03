@@ -82,15 +82,16 @@
   <h2>VOCHT MONITOR</h2>
 
   <div class="tab-header no-print">
-    <button class="tab-btn active" onclick="switchTab('formTab')">Nieuwe Registratie</button>
+    <button class="tab-btn active" onclick="switchTab('formTab')">Registratie</button>
     <button class="tab-btn" onclick="switchTab('historyTab'); loadHistory();">Overzicht & Historie</button>
   </div>
   
   <!-- TAB 1: FORMULIER -->
   <div id="formTab" class="tab-content active">
     <form id="dialyseForm">
-      
-      <!-- NIEUW: AFSPRAAK TYPE EN TIJD BOVENAAN -->
+      <!-- Verborgen Veld voor ID (voor bijwerken van dezelfde regel) -->
+      <input type="hidden" id="editEntryId" value="">
+
       <div class="row">
         <div class="col form-group">
           <label>Afspraak</label>
@@ -385,6 +386,9 @@
     btn.disabled = true;
     btn.innerText = "Bezig met opslaan...";
 
+    var editId = document.getElementById('editEntryId').value;
+    var entryId = editId ? parseInt(editId) : Date.now();
+
     var countFragmin2500 = [1,2,3,4].filter(i => document.getElementById('f2500_' + i).checked).length;
     var countFragmin5000 = [1,2,3,4].filter(i => document.getElementById('f5000_' + i).checked).length;
 
@@ -393,7 +397,7 @@
                               .join(', ');
 
     var entry = {
-      id: Date.now(),
+      id: entryId,
       datum: new Date().toLocaleString('nl-NL'),
       afspraakType: document.getElementById('afspraakType').value,
       afspraakTijd: document.getElementById('afspraakTijd').value,
@@ -416,7 +420,14 @@
       verslag: document.getElementById('verslag').value
     };
 
-    localEntries.unshift(entry);
+    // Indien bewerken: vervang in de bestaande lijst, anders voeg toe bovenaan
+    var existingIndex = localEntries.findIndex(e => e.id === entryId);
+    if (existingIndex !== -1) {
+      localEntries[existingIndex] = entry;
+    } else {
+      localEntries.unshift(entry);
+    }
+    
     localStorage.setItem('dialyseEntries', JSON.stringify(localEntries));
 
     fetch(GOOGLE_SCRIPT_URL, {
@@ -429,8 +440,9 @@
       alert("Gegevens succesvol opgeslagen!");
       var currentDry = document.getElementById('droogGewicht').value;
       document.getElementById('dialyseForm').reset();
+      document.getElementById('editEntryId').value = ''; // Reset ID
       document.getElementById('droogGewicht').value = currentDry;
-      document.getElementById('afspraakTijd').value = '22:30'; // Standaard 22:30 herstellen
+      document.getElementById('afspraakTijd').value = '22:30';
       document.getElementById('ufBadge').style.display = 'none';
       renderNurseList();
     })
@@ -479,6 +491,7 @@
 
   function editEntry(index) {
     const entry = localEntries[index];
+    document.getElementById('editEntryId').value = entry.id; // Bewaar unieke ID
     document.getElementById('afspraakType').value = entry.afspraakType || 'Om de dag';
     document.getElementById('afspraakTijd').value = entry.afspraakTijd || '22:30';
     document.getElementById('droogGewicht').value = entry.droogGewicht || 121;
@@ -493,6 +506,21 @@
     document.getElementById('shuntflow').checked = entry.shuntflow;
     document.getElementById('shuntflowResultaat').value = entry.shuntflowResultaat || '';
     document.getElementById('verslag').value = entry.verslag || '';
+
+    // Stel vinkjes voor Fragmin in
+    [1,2,3,4].forEach(i => {
+      document.getElementById('f2500_' + i).checked = (i <= entry.fragmin2500);
+      document.getElementById('f5000_' + i).checked = (i <= entry.fragmin5000);
+    });
+
+    // Stel geselecteerde verpleging in
+    if (entry.verpleging) {
+      const activeNurses = entry.verpleging.split(', ');
+      document.querySelectorAll('.nurse-checkbox').forEach(cb => {
+        cb.checked = activeNurses.includes(cb.value);
+      });
+      updateSelectedText();
+    }
 
     calculateUF();
     calculateActualUF();
